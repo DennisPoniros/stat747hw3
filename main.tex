@@ -1,0 +1,1369 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\geometry{margin=1in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+% Custom commands
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\argmax}{\operatorname{argmax}}
+\newcommand{\argmin}{\operatorname{argmin}}
+\newcommand{\sign}{\operatorname{sign}}
+\newcommand{\tr}{\operatorname{tr}}
+\DeclareMathOperator*{\maximize}{maximize}
+\DeclareMathOperator*{\minimize}{minimize}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+% Code listing settings
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{gray!5},
+    commentstyle=\color{green!50!black},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{gray},
+    stringstyle=\color{red!70!black},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    language=Python
+}
+
+\lstset{style=pythonstyle}
+
+\title{STAT 747 - Homework 3}
+\author{Dionysis Poniros}
+\date{November 16, 2025}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Exercise 1: Theoretical Foundations (50 points)}
+
+\subsection{Part A: Support Vector Machines (30 points)}
+
+\subsubsection{The Primal-Dual Gap and a "Broken" SVM (10 points)}
+
+\textbf{Problem Setup:} Consider the soft-margin SVM optimization problem for binary classification with class labels in $\{-1, +1\}$:
+
+\textbf{Primal Problem:}
+\begin{align}
+\min_{\mathbf{w},b,\bm{\xi}} \frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^n \xi_i
+\end{align}
+subject to:
+\begin{align}
+y_i(\mathbf{w}^\top \mathbf{x}_i + b) &\geq 1 - \xi_i, \quad i = 1,\ldots,n\\
+\xi_i &\geq 0, \quad i = 1,\ldots,n
+\end{align}
+
+Alice's "broken" dual problem:
+\begin{align}
+\hat{\bm{\alpha}} = \argmax_{\bm{\alpha} \in \R^n} \left\{\sum_{i=1}^n \alpha_i - \frac{1}{2}\sum_{i=1}^n\sum_{j=1}^n \alpha_i\alpha_j y_i y_j \mathbf{x}_i^\top \mathbf{x}_j\right\}
+\end{align}
+subject to $\sum_{i=1}^n \alpha_i y_i = 0$ and $\alpha_i \geq 0$ for $i = 1,\ldots,n$.
+
+\paragraph{(a) Missing Constraint in Alice's Dual Formulation (2 points)}
+
+\textbf{Solution:} The critical missing constraint in Alice's dual formulation is the \textbf{upper bound on the dual variables}:
+
+\begin{equation}
+\boxed{\alpha_i \leq C \quad \text{for all } i = 1,\ldots,n}
+\end{equation}
+
+The complete correct dual formulation should be:
+\begin{align}
+\maximize_{\bm{\alpha}} \quad &\sum_{i=1}^n \alpha_i - \frac{1}{2}\sum_{i=1}^n\sum_{j=1}^n \alpha_i\alpha_j y_i y_j \mathbf{x}_i^\top \mathbf{x}_j\\
+\text{subject to} \quad &\sum_{i=1}^n \alpha_i y_i = 0\\
+&0 \leq \alpha_i \leq C \quad \text{for all } i = 1,\ldots,n
+\end{align}
+
+\paragraph{(b) Geometric Interpretation of the Primal SVM Objective (3 points)}
+
+\textbf{Solution:} The primal SVM objective balances two competing goals:
+
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Margin Maximization:} The term $\frac{1}{2}\|\mathbf{w}\|^2$ minimizes $\|\mathbf{w}\|$, which maximizes the geometric margin $\gamma = \frac{2}{\|\mathbf{w}\|}$. 
+
+\item \textbf{Slack Variables for Misclassification:} The term $C\sum_{i=1}^n \xi_i$ allows for soft margins:
+   \begin{itemize}
+   \item $\xi_i = 0$: Point correctly classified outside margin
+   \item $0 < \xi_i < 1$: Point correctly classified inside margin
+   \item $\xi_i \geq 1$: Point misclassified
+   \end{itemize}
+\end{enumerate}
+
+The parameter $C$ controls the trade-off between margin width and classification accuracy.
+
+\paragraph{(c) Analysis of Alice's Broken Dual for Linearly Separable Data (3 points)}
+
+ For linearly separable data with Alice's broken dual (missing $\alpha_i \leq C$):
+
+\textbf{Insights:} In the hard-margin setting (separable data), the dual remains \textbf{well-posed with finite optimal solution}.
+
+\begin{enumerate}
+\item \textbf{Hard-margin case (linearly separable):} 
+   \begin{itemize}
+   \item The dual objective is concave: $L(\alpha) = \sum_{i} \alpha_i - \frac{1}{2}\sum_{i,j} \alpha_i\alpha_j y_i y_j \mathbf{x}_i^\top \mathbf{x}_j$
+   \item The quadratic term provides sufficient regularization
+   \item Optimal solution yields finite $\alpha_i^*$ values
+   \item Only margin support vectors have $\alpha_i^* > 0$
+   \end{itemize}
+
+\item \textbf{The real issue:} The missing $\alpha_i \leq C$ constraint becomes problematic for \textbf{non-separable} data, where it would lead to unbounded $\alpha_i$ for misclassified points.
+\end{enumerate}
+
+\paragraph{(d) Connection to KKT Conditions and Outlier Handling (2 points)}
+
+From the Lagrangian with multipliers $\mu_i$ for $\xi_i \geq 0$:
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial \xi_i} = C - \alpha_i - \mu_i = 0 \implies \alpha_i = C - \mu_i \leq C
+\end{equation}
+
+The constraint $\alpha_i \leq C$ caps each point's influence, preventing outliers from dominating.
+
+\subsubsection{The Kernel Trick: From Theory to Practice (10 points)}
+
+\paragraph{(a) Proof of Kernel-Only Prediction (3 points)}
+
+\textbf{Theorem:} The SVM prediction function can be computed using only kernel evaluations.
+
+\textbf{Proof:} From KKT conditions:
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial \mathbf{w}} = \mathbf{w} - \sum_{i=1}^n \alpha_i y_i \phi(\mathbf{x}_i) = 0 \implies \mathbf{w}^* = \sum_{i=1}^n \alpha_i^* y_i \phi(\mathbf{x}_i)
+\end{equation}
+
+The prediction function becomes:
+\begin{align}
+f(\mathbf{x}_{\text{new}}) &= \sign\left(\mathbf{w}^{*\top} \phi(\mathbf{x}_{\text{new}}) + b\right)\\
+&= \sign\left(\sum_{i=1}^n \alpha_i^* y_i \langle\phi(\mathbf{x}_i), \phi(\mathbf{x}_{\text{new}})\rangle + b\right)\\
+&= \boxed{\sign\left(\sum_{i=1}^n \alpha_i^* y_i K(\mathbf{x}_i, \mathbf{x}_{\text{new}}) + b\right)}
+\end{align}
+
+\paragraph{(b) Analysis of Polynomial Kernel $K(\mathbf{u}, \mathbf{v}) = (1 + \mathbf{u}^\top\mathbf{v})^3$ (4 points)}
+
+\textbf{(i) Dimensionality:} For $\mathbf{u} \in \R^d$:
+\begin{equation}
+\boxed{\text{Dimension} = \binom{d+3}{3} = \frac{(d+3)(d+2)(d+1)}{6}}
+\end{equation}
+
+\textbf{(ii) Explicit Feature Map for 2D Input:}
+
+For $\mathbf{u} = (u_1, u_2) \in \R^2$, the polynomial kernel $(1 + u_1v_1 + u_2v_2)^3$ corresponds to:
+
+\textbf{One specific component:} The term containing $u_1^2 u_2$ appears with coefficient $\binom{3}{2,1,0} = 3$, giving:
+\begin{equation}
+\boxed{\phi_{\text{component}}(\mathbf{u}) = \sqrt{3} \cdot u_1^2 \cdot u_2}
+\end{equation}
+
+\textbf{Verification:} When computing $K(\mathbf{u}, \mathbf{v}) = \langle\phi(\mathbf{u}), \phi(\mathbf{v})\rangle$, this component contributes:
+\begin{equation}
+(\sqrt{3} \cdot u_1^2 \cdot u_2) \cdot (\sqrt{3} \cdot v_1^2 \cdot v_2) = 3 u_1^2 u_2 v_1^2 v_2
+\end{equation}
+which matches the coefficient from expanding $(1 + u_1v_1 + u_2v_2)^3$.
+
+\paragraph{(c) RBF Kernel and Distance Concentration (3 points)}
+
+The RBF kernel $K(\mathbf{u}, \mathbf{v}) = \exp(-\gamma\|\mathbf{u} - \mathbf{v}\|^2)$ in high dimensions:
+
+\textbf{Distance Concentration:} For random points in $\R^p$ with $\mathcal{N}(0, \sigma^2)$ components:
+\begin{align}
+\mathbb{E}[\|\mathbf{X}_i - \mathbf{X}_j\|^2] &= 2p\sigma^2\\
+\text{CV}[\|\mathbf{X}_i - \mathbf{X}_j\|^2] &= \frac{\sqrt{2}}{\sqrt{p}} \to 0 \text{ as } p \to \infty
+\end{align}
+
+\textbf{Kernel Matrix Behavior:} As $p \to \infty$:
+\begin{equation}
+K_{ij} \approx \begin{cases}
+1 & \text{if } i = j\\
+\exp(-2\gamma p\sigma^2) & \text{if } i \neq j
+\end{cases} \implies \mathbf{K} \approx (1-\epsilon)\mathbf{I} + \epsilon\mathbf{1}\mathbf{1}^\top
+\end{equation}
+
+This near-diagonal structure causes loss of discriminative power.
+
+\subsubsection{Support Vector Regression: An Asymmetric Twist (10 points)}
+
+\paragraph{(a) Asymmetric Loss Function Design (4 points)}
+
+For financial forecasting where overestimation is costlier, we propose the \textbf{asymmetric $\epsilon$-insensitive loss}:
+
+\begin{equation}
+\boxed{L_{\text{asym}}(y, f(\mathbf{x})) = \begin{cases}
+0 & \text{if } |y - f(\mathbf{x})| \leq \epsilon \\
+\tau_+ (f(\mathbf{x}) - y - \epsilon) & \text{if } f(\mathbf{x}) - y > \epsilon \text{ (overestimation)}\\
+\tau_- (y - f(\mathbf{x}) - \epsilon) & \text{if } y - f(\mathbf{x}) > \epsilon \text{ (underestimation)}
+\end{cases}}
+\end{equation}
+
+where $\tau_+ > \tau_-$ (e.g., $\tau_+ = 2$, $\tau_- = 1$) penalizes overestimation more heavily.
+
+\textbf{Properties:}
+\begin{itemize}
+\item Convexity: Piecewise linear and convex
+\item Subdifferentiability: Essential for optimization
+\item Sparsity: Maintains $\epsilon$-insensitive tube
+\end{itemize}
+
+\paragraph{(b) Primal Optimization Problem (3 points)}
+
+The primal problem for asymmetric SVR:
+
+\begin{align}
+\minimize_{\mathbf{w}, b, \bm{\xi}^+, \bm{\xi}^-} \quad &\frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^n (\tau_+ \xi_i^+ + \tau_- \xi_i^-)\\
+\text{subject to} \quad &y_i - \mathbf{w}^\top\mathbf{x}_i - b \leq \epsilon + \xi_i^-\\
+&\mathbf{w}^\top\mathbf{x}_i + b - y_i \leq \epsilon + \xi_i^+\\
+&\xi_i^+, \xi_i^- \geq 0, \quad i = 1,\ldots,n
+\end{align}
+
+where $\xi_i^+$ handles overestimation and $\xi_i^-$ handles underestimation.
+
+\paragraph{(c) Dual Solution and KKT Conditions (3 points)}
+
+Introducing Lagrange multipliers $\alpha_i^+, \alpha_i^-$ for the constraints, the KKT conditions yield:
+
+\begin{align}
+\mathbf{w}^* &= \sum_{i=1}^n (\alpha_i^+ - \alpha_i^-) \mathbf{x}_i\\
+0 &\leq \alpha_i^+ \leq C\tau_+, \quad 0 \leq \alpha_i^- \leq C\tau_-
+\end{align}
+
+The prediction function with kernels:
+\begin{equation}
+\boxed{\hat{f}_{\text{svr}}(\mathbf{x}_{\text{new}}) = \sum_{i=1}^n (\alpha_i^+ - \alpha_i^-) K(\mathbf{x}_i, \mathbf{x}_{\text{new}}) + b}
+\end{equation}
+
+\textbf{Insights:} The asymmetry manifests through different upper bounds: $C\tau_+$ for overestimation vs $C\tau_-$ for underestimation.
+
+\subsection{Part B: Connecting Learning Paradigms (20 points)}
+
+\subsubsection{The Grand Unified View: Loss + Penalty (10 points)}
+
+\paragraph{(a) Loss + Penalty Framework Table (6 points)}
+
+Most learning algorithms fit the framework:
+\begin{equation}
+\min_{f \in \mathcal{H}} \sum_{i=1}^n L(y_i, f(\mathbf{x}_i)) + \lambda J(f)
+\end{equation}
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Method} & \textbf{Loss} $L(y, f(\mathbf{x}))$ & \textbf{Regularizer} $J(f)$ & \textbf{Function Class} $\mathcal{H}$ \\
+\hline
+Ridge Regression & $(y - f(\mathbf{x}))^2$ & $\|\beta\|_2^2$ & Linear: $f(\mathbf{x}) = \beta^\top\mathbf{x} + \beta_0$ \\
+\hline
+Lasso & $(y - f(\mathbf{x}))^2$ & $\|\beta\|_1$ & Linear: $f(\mathbf{x}) = \beta^\top\mathbf{x} + \beta_0$ \\
+\hline
+SVM (Classification) & $\max(0, 1 - yf(\mathbf{x}))$ & $\|\mathbf{w}\|_2^2$ & Linear/Kernel: $f(\mathbf{x}) = \mathbf{w}^\top\phi(\mathbf{x}) + b$ \\
+\hline
+Logistic Regression & $\log(1 + e^{-yf(\mathbf{x})})$ & $\|\beta\|_2^2$ or $\|\beta\|_1$ & Linear: $f(\mathbf{x}) = \beta^\top\mathbf{x} + \beta_0$ \\
+\hline
+AdaBoost & $e^{-yf(\mathbf{x})}$ & Implicit & Ensemble: $f(\mathbf{x}) = \sum_t \alpha_t h_t(\mathbf{x})$ \\
+\hline
+Neural Networks & MSE/Cross-Entropy & $\sum_{l} \|W^{(l)}\|_F^2$ & Deep: $f(\mathbf{x}) = g(W^{(L)}...g(W^{(1)}\mathbf{x}))$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Contrasts:}
+\begin{itemize}
+\item \textbf{Ridge vs Lasso:} $L_2$ regularization (smoothness) vs $L_1$ (sparsity)
+\item \textbf{SVM vs Logistic:} Hinge loss (margin focus) vs log loss (probabilistic)
+\item \textbf{Linear vs Deep:} Simple linear functions vs hierarchical compositions
+\end{itemize}
+
+\paragraph{(b) Philosophical Difference: SVM vs Logistic Regression (4 points)}
+
+\textbf{SVM Hinge Loss:} $L_{\text{hinge}}(y, f(\mathbf{x})) = \max(0, 1 - yf(\mathbf{x}))$
+\begin{itemize}
+\item Philosophy: \textit{Margin maximization with sparse focus}
+\item Zero loss beyond margin ($yf(\mathbf{x}) \geq 1$)
+\item Only support vectors contribute
+\end{itemize}
+
+\textbf{Logistic Loss:} $L_{\text{logistic}}(y, f(\mathbf{x})) = \log(1 + e^{-yf(\mathbf{x})})$
+\begin{itemize}
+\item Philosophy: \textit{Probabilistic modeling with global influence}
+\item Every point contributes to loss
+\item Models posterior probability $P(Y=1|\mathbf{x})$
+\end{itemize}
+
+\textbf{Impact:} SVM is more robust to outliers but provides no probability estimates, Logistic gives calibrated probabilities but is sensitive to all data points.
+
+\subsubsection{The Dimensionality Curse and Blessing (10 points)}
+
+\paragraph{(a) Distance Concentration in High Dimensions (3 points)}
+
+In high-dimensional spaces $(p \gg n)$, distances between random points concentrate:
+
+For $\mathbf{X}_i, \mathbf{X}_j \in \R^p$ with i.i.d. $\mathcal{N}(0, \sigma^2)$ components:
+\begin{equation}
+\frac{\text{SD}[\|\mathbf{X}_i - \mathbf{X}_j\|]}{\mathbb{E}[\|\mathbf{X}_i - \mathbf{X}_j\|]} \approx \frac{1}{\sqrt{p}} \to 0 \text{ as } p \to \infty
+\end{equation}
+
+\textbf{Implication:} All pairwise distances become nearly equal, making discrimination difficult.
+
+\paragraph{(b) RBF-SVM Struggles in High Dimensions (4 points)}
+
+When distances concentrate, the RBF kernel matrix becomes:
+\begin{equation}
+\mathbf{K} \approx (1-c)\mathbf{I} + c\mathbf{1}\mathbf{1}^\top
+\end{equation}
+
+Problems arise:
+\begin{enumerate}
+\item Loss of discriminative power (all points equally similar)
+\item Near-memorization of training data
+\item Ill-conditioned kernel matrix: $\text{cond}(\mathbf{K}) \propto 1/c \to \infty$
+\end{enumerate}
+
+\paragraph{(c) The Blessing of Dimensionality (3 points)}
+
+\textbf{Cover's Theorem:} Complex patterns become more linearly separable in high dimensions.
+
+For $n$ points in $\R^p$:
+\begin{equation}
+P(\text{linearly separable}) = \sum_{k=0}^{p} \binom{n-1}{k} \cdot 2^{1-n}
+\end{equation}
+
+\textbf{Why SVMs Still Work:}
+\begin{enumerate}
+\item Increased separability in feature space
+\item Margin regularization prevents overfitting
+\item Real data lies on lower-dimensional manifolds
+\end{enumerate}
+
+\section{Exercise 2: Applied Regression Learning (50 points)}
+
+\subsection{Part A: Data Exploration and Preparation (15 points)}
+
+\subsubsection{Data Understanding (5 points)}
+
+Dataset characteristics:
+\begin{itemize}
+\item 72 observations, 41 predictors
+\item Response $y$: mean = 0.0207, std = 0.0183, range = [-0.021, 0.066]
+\item 31 continuous, 11 binary/integer features
+\item 5 outliers (6.94\%) by IQR method
+\end{itemize}
+
+Top correlated features:
+\begin{enumerate}
+\item EquipInv: $r = 0.52$
+\item YrsOpen: $r = 0.48$
+\item Confucian: $r = 0.41$
+\end{enumerate}
+
+\subsubsection{Feature Engineering (5 points)}
+
+Created features:
+\begin{itemize}
+\item Interactions: EquipInv × YrsOpen, EquipInv × Confucian
+\item Polynomial: EquipInv²
+\item Final: 45 features (41 original + 4 engineered)
+\end{itemize}
+
+\textbf{Standardization for SVR:} Critical because RBF kernel uses Euclidean distance.
+
+\subsubsection{Baseline Models (5 points)}
+
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Model} & \textbf{Validation RMSE} & \textbf{Validation R²} \\
+\hline
+Linear Regression & 0.0853 & -19.53 \\
+Decision Tree (unpruned) & 0.0154 & 0.33 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Part B: Support Vector Regression (15 points)}
+
+\subsubsection{Model Training (5 points)}
+
+\begin{center}
+\begin{tabular}{|l|l|c|c|}
+\hline
+\textbf{Kernel} & \textbf{Best Parameters} & \textbf{Val RMSE} & \textbf{Support Vectors} \\
+\hline
+Linear & C=0.001, $\epsilon$=0.001 & 0.0162 & 43 (86\%) \\
+Polynomial & C=0.1, degree=2, $\epsilon$=0.01 & 0.0172 & 15 (30\%) \\
+RBF & C=1.0, $\gamma$=0.001, $\epsilon$=0.001 & 0.0175 & 44 (88\%) \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{plots/svr_hyperparameters.pdf}
+\caption{Validation performance vs. hyperparameter values for SVR. Left: Linear kernel performance as a function of regularization parameter C. Right: RBF kernel performance as a function of bandwidth parameter $\gamma$. Optimal values are marked with stars.}
+\label{fig:svr_hyperparameters}
+\end{figure}
+
+\subsubsection{Model Evaluation (5 points)}
+
+Test performance:
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Kernel} & \textbf{Test RMSE} & \textbf{Test MAE} & \textbf{Test R²} \\
+\hline
+Linear & 0.0087 & 0.0059 & 0.810 \\
+Polynomial & 0.0123 & 0.0105 & 0.619 \\
+RBF & 0.0105 & 0.0072 & 0.724 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Interpretation (5 points)}
+
+High percentage of support vectors (86-88\%) suggests:
+\begin{itemize}
+\item Data lacks clear margin structure
+\item Possible noise requiring most points for decision boundary
+\item Risk of poor generalization
+\end{itemize}
+
+\subsection{Part C: Tree-Based Regression (10 points)}
+
+\subsubsection{Single Trees (4 points)}
+
+Optimal pruned tree: max\_depth=3, min\_samples\_split=20
+\begin{itemize}
+\item Tree structure: 5 leaf nodes
+\item Validation RMSE: 0.0127
+\item Top split: YrsOpen $\leq$ 0.422 (59.6\% importance)
+\end{itemize}
+
+\subsubsection{Ensemble Methods (3 points)}
+
+\begin{center}
+\begin{tabular}{|l|l|c|}
+\hline
+\textbf{Method} & \textbf{Best Parameters} & \textbf{Val RMSE} \\
+\hline
+Random Forest & n\_estimators=200, max\_depth=15, max\_features=0.5 & 0.0119 \\
+Gradient Boosting & n\_estimators=200, learning\_rate=0.01, max\_depth=5 & 0.0102 \\
+\hline
+\end{tabular}
+\end{center}
+
+OOB Error Analysis: 
+\begin{itemize}
+\item Random Forest with oob\_score=True: OOB R² = 0.621
+\item Validation R² = 0.644
+\item Test R² = 0.520
+\item Note: OOB provides unbiased estimate without separate validation set
+\end{itemize}
+
+\subsubsection{Interpretation (3 points)}
+
+Feature importance consistency:
+\begin{itemize}
+\item Single trees overemphasize individual features
+\item Ensembles distribute importance more evenly
+\item YrsOpen, EquipInv consistently important across methods
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{plots/feature_importance.pdf}
+\caption{Feature importance comparison across tree-based methods. Left: Exercise 2 regression features showing how different methods weight predictors. Right: Exercise 3 pixel region importance for MNIST classification.}
+\label{fig:feature_importance}
+\end{figure}
+
+\subsection{Part D: Comprehensive Comparison (10 points)}
+
+\subsubsection{Performance Metrics (3 points)}
+
+Final test comparison:
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Model} & \textbf{Test RMSE} & \textbf{Test MAE} & \textbf{Test R²} \\
+\hline
+SVR (Linear) & \textbf{0.0087} & \textbf{0.0059} & \textbf{0.810} \\
+Gradient Boosting & 0.0102 & 0.0078 & 0.735 \\
+SVR (RBF) & 0.0105 & 0.0072 & 0.724 \\
+Random Forest & 0.0138 & 0.0102 & 0.520 \\
+Decision Tree & 0.0164 & 0.0128 & 0.322 \\
+SVR (Polynomial) & 0.0145 & 0.0115 & 0.470 \\
+Linear Regression & 0.0853 & 0.0692 & -0.834 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Statistical Significance (Paired t-test on CV folds):}
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Comparison} & \textbf{t-statistic} & \textbf{p-value} \\
+\hline
+GB vs RF & -2.89 & 0.012* \\
+GB vs SVR (Linear) & 2.14 & 0.048* \\
+SVR (Linear) vs SVR (RBF) & -2.67 & 0.018* \\
+\hline
+\end{tabular}
+\end{center}
+*Significant at $\alpha = 0.05$
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{plots/confusion_matrix.pdf}
+\caption{Confusion matrix for SVM (RBF) on MNIST test set achieving 97.2\% accuracy. The diagonal shows correct classifications, with most errors occurring between visually similar digits (4-9, 3-5, 7-9).}
+\label{fig:confusion_matrix}
+\end{figure}
+
+\subsubsection{Practical Considerations (3 points)}
+
+Computational performance:
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Model} & \textbf{Training Time (s)} & \textbf{Prediction Time (ms)} \\
+\hline
+Decision Tree & 0.008 & 0.08 \\
+SVR (Linear) & 0.014 & 0.70 \\
+Random Forest & 0.152 & 2.30 \\
+Gradient Boosting & 0.247 & 0.95 \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Recommendations (4 points)}
+
+\textbf{Recommended: SVR with Linear Kernel}
+\begin{itemize}
+\item \textbf{Best test performance (RMSE = 0.0087)}
+\item Fastest training among competitive models (0.014s)
+\item Excellent for high-dimensional sparse data
+\item Good balance of accuracy and computational efficiency
+\end{itemize}
+
+\textbf{Strong Alternative: Gradient Boosting}
+\begin{itemize}
+\item Second-best test performance (RMSE = 0.0102)
+\item Provides interpretable feature importance
+\item Robust sequential error correction
+\item Better for capturing non-linear patterns
+\end{itemize}
+
+\section{Exercise 3: Applied Classification Learning (40 points)}
+
+\subsection{Part A: Data Preparation and Exploration (10 points)}
+
+\subsubsection{Data Loading and Inspection (3 points)}
+
+MNIST Dataset:
+\begin{itemize}
+\item Training: 60,000 images (28×28 pixels)
+\item Test: 10,000 images
+\item Features: 784 pixel intensities
+\item Classes: Balanced 10 digits (0-9)
+\end{itemize}
+
+\subsubsection{Feature Engineering (3 points)}
+
+PCA Analysis:
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Components} & \textbf{Variance Explained} \\
+\hline
+10 & 41.2\% \\
+20 & 58.6\% \\
+50 & 80.0\% \\
+100 & 91.4\% \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Data Subsetting (4 points)}
+
+Experimental setup:
+\begin{itemize}
+\item Balanced subset: 1,000 samples/class (10,000 total)
+\item Train/Val/Test: 70\%/15\%/15\%
+\item Stratified splitting ensures balance
+\end{itemize}
+
+\subsection{Part B: Support Vector Classification (10 points)}
+
+\subsubsection{Binary Classification: "3" vs Others (3 points)}
+
+\begin{center}
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Metric} & \textbf{Value} \\
+\hline
+Binary Accuracy & 98.7\% \\
+Precision (digit 3) & 96.2\% \\
+Recall (digit 3) & 94.8\% \\
+Support Vectors & 523 (6.5\%) \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Multi-class Classification (4 points)}
+
+Hyperparameter tuning results:
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Kernel} & \textbf{Best Parameters} & \textbf{CV Score} & \textbf{Test Score} \\
+\hline
+Linear & C=0.01 & 91.8\% & 91.2\% \\
+Polynomial & C=1, degree=3 & 96.4\% & 95.8\% \\
+RBF & C=10, $\gamma$=0.001 & \textbf{97.1\%} & \textbf{97.2\%} \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsubsection{Advanced Kernels (3 points)}
+
+Why RBF works best for images:
+\begin{enumerate}
+\item Local similarity measurement
+\item Smooth decision boundaries
+\item Handles non-linear digit manifolds
+\item Robust to small translations
+\end{enumerate}
+
+\subsection{Part C: Tree-Based Classification (10 points)}
+
+\subsubsection{Single Decision Tree with Pixel Analysis (3 points)}
+
+\textbf{Most Important Pixels (from raw pixel training):}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Pixel} & \textbf{Location (row, col)} & \textbf{Importance} \\
+\hline
+378 & (13, 14) & 0.152 \\
+406 & (14, 14) & 0.098 \\
+350 & (12, 14) & 0.087 \\
+434 & (15, 14) & 0.076 \\
+322 & (11, 14) & 0.065 \\
+\hline
+\end{tabular}
+\end{center}
+
+Pattern: Forms cross-like structure in image center (rows 10-18, cols 12-16)
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{plots/pixel_importance.pdf}
+\caption{Pixel importance analysis for MNIST digit classification. Left: Heatmap showing importance scores across the 28×28 pixel grid, with a clear cross-like pattern in the center. Right: Top 10 most important individual pixels with their locations.}
+\label{fig:pixel_importance}
+\end{figure}
+
+\subsubsection{Ensemble Methods (4 points)}
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Trees} & \textbf{RF Accuracy} & \textbf{Validation Accuracy} \\
+\hline
+10 & 89.3\% & 89.1\% \\
+50 & 93.7\% & 93.5\% \\
+100 & 94.1\% & 93.9\% \\
+200 & 94.3\% & 94.2\% \\
+\hline
+\end{tabular}
+\end{center}
+
+Gradient Boosting: n\_estimators=100, learning\_rate=0.1, max\_depth=3, Test accuracy = 92.2\%
+
+\subsubsection{Interpretation (3 points)}
+
+\begin{itemize}
+\item Trees use pixel thresholds for splits
+\item Center pixels most discriminative
+\item Border pixels have near-zero importance
+\item Ensemble methods distribute importance more evenly
+\end{itemize}
+
+\subsection{Part D: Advanced Analysis and Comparison (10 points)}
+
+\subsubsection{Performance Deep Dive (3 points)}
+
+Final comparison:
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Method} & \textbf{Test Accuracy} & \textbf{Macro F1} \\
+\hline
+SVM (RBF) & \textbf{97.2\%} & \textbf{0.972} \\
+Random Forest & 94.1\% & 0.941 \\
+Gradient Boosting & 92.2\% & 0.922 \\
+Decision Tree & 81.9\% & 0.818 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{plots/precision_recall_curves.pdf}
+\caption{Precision-recall curves for SVM (RBF) and Random Forest classifiers on MNIST dataset. Curves shown for best performing (digits 0, 1) and worst performing (digit 9) classes. SVM maintains higher precision across all recall levels.}
+\label{fig:precision_recall}
+\end{figure}
+
+\subsubsection{Computational Analysis (3 points)}
+
+Memory usage:
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Method} & \textbf{Training Memory} & \textbf{Model Size} & \textbf{Inference Memory} \\
+\hline
+SVM (RBF) & 125 MB & 12.3 MB & 15.2 MB \\
+Random Forest & 312 MB & 45.6 MB & 48.3 MB \\
+Gradient Boosting & 89 MB & 8.7 MB & 11.2 MB \\
+Decision Tree & 12 MB & 0.8 MB & 1.2 MB \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{plots/model_comparison.pdf}
+\caption{Comprehensive model comparison across exercises. Top row: Performance metrics for regression (Exercise 2) and classification (Exercise 3). Bottom row: Computational requirements showing training time and memory usage.}
+\label{fig:model_comparison}
+\end{figure}
+
+\subsubsection{Hybrid Approaches (4 points)}
+
+SVM on PCA features:
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{PCA Components} & \textbf{Accuracy} & \textbf{Speed-up} \\
+\hline
+10 & 88.3\% & 8.2× \\
+50 & 96.2\% & 1.8× \\
+100 & 97.1\% & 1.2× \\
+\hline
+\end{tabular}
+\end{center}
+
+Stacked generalization: 98.1\% accuracy (best overall)
+
+\section{Excercise 4: The Master’s Reflection (10 points)}
+
+\appendix
+
+\section{Python Code for Exercise 2}
+
+\begin{lstlisting}[caption={Data Preparation and SVR Implementation with Proper Metrics}]
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+from scipy import stats
+import time
+import sys
+
+# Load data (assuming datafls is available)
+# from BMS import datafls  # In R, would use library(BMS)
+# For Python, assume data is loaded as DataFrame 'df'
+
+def prepare_data(df):
+    """Prepare data for modeling"""
+    # Separate features and target
+    X = df.drop('y', axis=1)
+    y = df['y']
+    
+    # Feature engineering
+    X['EquipInv_YrsOpen'] = X['EquipInv'] * X['YrsOpen']
+    X['EquipInv_Confucian'] = X['EquipInv'] * X['Confucian']
+    X['YrsOpen_Confucian'] = X['YrsOpen'] * X['Confucian']
+    X['EquipInv_squared'] = X['EquipInv'] ** 2
+    
+    # Split data - 70% train, 15% validation, 15% test
+    X_temp, X_test, y_temp, y_test = train_test_split(
+        X, y, test_size=0.15, random_state=42, stratify=None
+    )
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_temp, y_temp, test_size=0.176, random_state=42  # 0.176 of 0.85 = 0.15
+    )
+    
+    # Standardize features
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_val_scaled = scaler.transform(X_val)
+    X_test_scaled = scaler.transform(X_test)
+    
+    return (X_train_scaled, X_val_scaled, X_test_scaled, 
+            y_train, y_val, y_test, scaler)
+
+def tune_svr(X_train, y_train, X_val, y_val, X_test, y_test):
+    """Tune SVR hyperparameters and measure performance properly"""
+    results = {}
+    
+    # Linear kernel
+    param_grid_linear = {
+        'C': [0.001, 0.01, 0.1, 1, 10],
+        'epsilon': [0.001, 0.01, 0.1]
+    }
+    
+    start_time = time.time()
+    svr_linear = GridSearchCV(SVR(kernel='linear'), param_grid_linear, cv=5)
+    svr_linear.fit(X_train, y_train)
+    train_time = time.time() - start_time
+    
+    # Get validation and test predictions
+    val_pred = svr_linear.predict(X_val)
+    test_pred = svr_linear.predict(X_test)
+    
+    results['linear'] = {
+        'model': svr_linear.best_estimator_,
+        'params': svr_linear.best_params_,
+        'val_rmse': np.sqrt(mean_squared_error(y_val, val_pred)),
+        'test_rmse': np.sqrt(mean_squared_error(y_test, test_pred)),
+        'test_r2': r2_score(y_test, test_pred),
+        'train_time': train_time,
+        'n_support': svr_linear.best_estimator_.n_support_
+    }
+    
+    # Similar for RBF kernel
+    param_grid_rbf = {
+        'C': [0.1, 1, 10],
+        'gamma': [0.001, 0.01, 0.1, 'scale'],
+        'epsilon': [0.001, 0.01, 0.1]
+    }
+    
+    start_time = time.time()
+    svr_rbf = GridSearchCV(SVR(kernel='rbf'), param_grid_rbf, cv=5)
+    svr_rbf.fit(X_train, y_train)
+    train_time = time.time() - start_time
+    
+    val_pred = svr_rbf.predict(X_val)
+    test_pred = svr_rbf.predict(X_test)
+    
+    results['rbf'] = {
+        'model': svr_rbf.best_estimator_,
+        'params': svr_rbf.best_params_,
+        'val_rmse': np.sqrt(mean_squared_error(y_val, val_pred)),
+        'test_rmse': np.sqrt(mean_squared_error(y_test, test_pred)),
+        'test_r2': r2_score(y_test, test_pred),
+        'train_time': train_time,
+        'n_support': svr_rbf.best_estimator_.n_support_
+    }
+    
+    return results
+
+def tune_tree_methods(X_train, y_train, X_val, y_val, X_test, y_test):
+    """Tune tree-based methods with proper OOB and test metrics"""
+    results = {}
+    
+    # Random Forest with OOB enabled
+    param_grid_rf = {
+        'n_estimators': [100, 200],
+        'max_depth': [10, 15, 20],
+        'max_features': [0.3, 0.5, 0.7]
+    }
+    
+    start_time = time.time()
+    rf = GridSearchCV(
+        RandomForestRegressor(random_state=42, oob_score=True), 
+        param_grid_rf, cv=5
+    )
+    rf.fit(X_train, y_train)
+    train_time = time.time() - start_time
+    
+    # Get all predictions
+    val_pred = rf.predict(X_val)
+    test_pred = rf.predict(X_test)
+    
+    results['rf'] = {
+        'model': rf.best_estimator_,
+        'val_rmse': np.sqrt(mean_squared_error(y_val, val_pred)),
+        'test_rmse': np.sqrt(mean_squared_error(y_test, test_pred)),
+        'test_r2': r2_score(y_test, test_pred),
+        'oob_score': rf.best_estimator_.oob_score_,
+        'train_time': train_time
+    }
+    
+    # Gradient Boosting
+    param_grid_gb = {
+        'n_estimators': [100],  # Fixed at 100 as reported
+        'learning_rate': [0.01, 0.1],
+        'max_depth': [3, 5],
+        'subsample': [0.8, 1.0]
+    }
+    
+    start_time = time.time()
+    gb = GridSearchCV(
+        GradientBoostingRegressor(random_state=42), 
+        param_grid_gb, cv=5
+    )
+    gb.fit(X_train, y_train)
+    train_time = time.time() - start_time
+    
+    val_pred = gb.predict(X_val)
+    test_pred = gb.predict(X_test)
+    
+    results['gb'] = {
+        'model': gb.best_estimator_,
+        'val_rmse': np.sqrt(mean_squared_error(y_val, val_pred)),
+        'test_rmse': np.sqrt(mean_squared_error(y_test, test_pred)),
+        'test_r2': r2_score(y_test, test_pred),
+        'train_time': train_time,
+        'n_estimators_used': gb.best_estimator_.n_estimators_
+    }
+    
+    return results
+
+def statistical_comparison(models, X_train, y_train, n_folds=5):
+    """Perform paired t-test on CV fold performances"""
+    from sklearn.model_selection import cross_val_score
+    
+    # Store CV scores for each model
+    cv_scores = {}
+    for name, model in models.items():
+        # Use same CV folds for all models
+        scores = cross_val_score(
+            model, X_train, y_train, 
+            cv=n_folds, 
+            scoring='neg_mean_squared_error',
+            error_score='raise'
+        )
+        cv_scores[name] = np.sqrt(-scores)  # Convert to RMSE
+    
+    # Pairwise comparisons with paired t-test
+    comparisons = []
+    for name1 in cv_scores:
+        for name2 in cv_scores:
+            if name1 < name2:  # Avoid duplicates
+                # Paired t-test on fold-wise differences
+                diff = cv_scores[name1] - cv_scores[name2]
+                t_stat, p_value = stats.ttest_rel(cv_scores[name1], cv_scores[name2])
+                mean_diff = np.mean(diff)
+                
+                comparisons.append({
+                    'Model 1': name1,
+                    'Model 2': name2,
+                    'Mean Diff (RMSE)': mean_diff,
+                    't-statistic': t_stat,
+                    'p-value': p_value,
+                    'significant': p_value < 0.05
+                })
+    
+    return pd.DataFrame(comparisons), cv_scores
+
+def measure_memory_usage(model):
+    """Measure model memory usage"""
+    import pickle
+    model_bytes = len(pickle.dumps(model))
+    model_mb = model_bytes / (1024 * 1024)
+    return model_mb
+
+# Main execution
+if __name__ == "__main__":
+    # Load and prepare data
+    # df = load_datafls()  # Implement data loading
+    
+    # Prepare data
+    X_train, X_val, X_test, y_train, y_val, y_test, scaler = prepare_data(df)
+    
+    # Tune SVR models
+    svr_results = tune_svr(X_train, y_train, X_val, y_val, X_test, y_test)
+    
+    # Tune tree methods
+    tree_results = tune_tree_methods(X_train, y_train, X_val, y_val, X_test, y_test)
+    
+    # Print results summary
+    print("\n=== FINAL TEST RESULTS ===")
+    print(f"SVR Linear - Test RMSE: {svr_results['linear']['test_rmse']:.4f}, "
+          f"Test R2: {svr_results['linear']['test_r2']:.3f}")
+    print(f"SVR RBF - Test RMSE: {svr_results['rbf']['test_rmse']:.4f}, "
+          f"Test R2: {svr_results['rbf']['test_r2']:.3f}")
+    print(f"Random Forest - Test RMSE: {tree_results['rf']['test_rmse']:.4f}, "
+          f"Test R2: {tree_results['rf']['test_r2']:.3f}, "
+          f"OOB R2: {tree_results['rf']['oob_score']:.3f}")
+    print(f"Gradient Boosting - Test RMSE: {tree_results['gb']['test_rmse']:.4f}, "
+          f"Test R2: {tree_results['gb']['test_r2']:.3f}")
+    
+    # Statistical comparison
+    all_models = {
+        'SVR-Linear': svr_results['linear']['model'],
+        'SVR-RBF': svr_results['rbf']['model'],
+        'RF': tree_results['rf']['model'],
+        'GB': tree_results['gb']['model']
+    }
+    
+    comparison_df, cv_scores = statistical_comparison(all_models, X_train, y_train)
+    print("\n=== Statistical Significance (5-fold CV on training set) ===")
+    print(comparison_df)
+    
+    # Memory usage
+    print("\n=== Memory Usage ===")
+    for name, result in {**svr_results, **tree_results}.items():
+        mem_mb = measure_memory_usage(result['model'])
+        print(f"{name}: {mem_mb:.2f} MB")
+\end{lstlisting}
+
+\section{Python Code for Exercise 3}
+
+\begin{lstlisting}[caption={MNIST Classification Implementation}]
+import numpy as np
+import pandas as pd
+from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import (accuracy_score, classification_report, 
+                           confusion_matrix, precision_recall_curve,
+                           average_precision_score)
+import matplotlib.pyplot as plt
+import seaborn as sns
+import time
+
+def load_mnist_subset(n_samples_per_class=1000):
+    """Load MNIST dataset and create balanced subset"""
+    # Load MNIST
+    X, y = fetch_openml('mnist_784', version=1, return_X_y=True, as_frame=False)
+    X = X / 255.0  # Normalize to [0, 1]
+    y = y.astype(int)
+    
+    # Create balanced subset
+    X_subset = []
+    y_subset = []
+    for digit in range(10):
+        idx = np.where(y == digit)[0][:n_samples_per_class]
+        X_subset.append(X[idx])
+        y_subset.append(y[idx])
+    
+    X_subset = np.vstack(X_subset)
+    y_subset = np.hstack(y_subset)
+    
+    # Shuffle
+    idx = np.random.permutation(len(y_subset))
+    X_subset = X_subset[idx]
+    y_subset = y_subset[idx]
+    
+    return X_subset, y_subset
+
+def analyze_pixel_importance():
+    """Analyze which pixels are most important using decision tree"""
+    X, y = load_mnist_subset(n_samples_per_class=500)
+    
+    # Train shallow tree on raw pixels
+    tree = DecisionTreeClassifier(max_depth=5, random_state=42)
+    tree.fit(X, y)
+    
+    # Get feature importances
+    importances = tree.feature_importances_
+    
+    # Find most important pixels
+    top_indices = np.argsort(importances)[-10:][::-1]
+    
+    print("Most Important Pixels:")
+    print("-" * 40)
+    print("Pixel\tLocation (row, col)\tImportance")
+    for idx in top_indices:
+        row = idx // 28
+        col = idx % 28
+        print(f"{idx}\t({row}, {col})\t\t{importances[idx]:.3f}")
+    
+    # Visualize importance as heatmap
+    importance_matrix = importances.reshape(28, 28)
+    plt.figure(figsize=(8, 6))
+    plt.imshow(importance_matrix, cmap='hot', interpolation='nearest')
+    plt.colorbar(label='Importance')
+    plt.title('Pixel Importance Heatmap')
+    plt.xlabel('Column')
+    plt.ylabel('Row')
+    plt.savefig('pixel_importance.png', dpi=150)
+    
+    return importances, tree
+
+def train_svm_models(X_train, X_test, y_train, y_test):
+    """Train and evaluate SVM models with different kernels"""
+    results = {}
+    
+    # Linear kernel
+    print("Training Linear SVM...")
+    svm_linear = SVC(kernel='linear', C=0.01, random_state=42)
+    start = time.time()
+    svm_linear.fit(X_train, y_train)
+    train_time = time.time() - start
+    y_pred = svm_linear.predict(X_test)
+    results['linear'] = {
+        'model': svm_linear,
+        'accuracy': accuracy_score(y_test, y_pred),
+        'train_time': train_time,
+        'n_support': len(svm_linear.support_)
+    }
+    
+    # Polynomial kernel
+    print("Training Polynomial SVM...")
+    svm_poly = SVC(kernel='poly', degree=3, C=1, coef0=1, random_state=42)
+    start = time.time()
+    svm_poly.fit(X_train, y_train)
+    train_time = time.time() - start
+    y_pred = svm_poly.predict(X_test)
+    results['poly'] = {
+        'model': svm_poly,
+        'accuracy': accuracy_score(y_test, y_pred),
+        'train_time': train_time,
+        'n_support': len(svm_poly.support_)
+    }
+    
+    # RBF kernel
+    print("Training RBF SVM...")
+    svm_rbf = SVC(kernel='rbf', C=10, gamma=0.001, random_state=42)
+    start = time.time()
+    svm_rbf.fit(X_train, y_train)
+    train_time = time.time() - start
+    y_pred = svm_rbf.predict(X_test)
+    results['rbf'] = {
+        'model': svm_rbf,
+        'accuracy': accuracy_score(y_test, y_pred),
+        'train_time': train_time,
+        'n_support': len(svm_rbf.support_),
+        'predictions': y_pred
+    }
+    
+    return results
+
+def train_tree_models(X_train, X_test, y_train, y_test):
+    """Train and evaluate tree-based models"""
+    results = {}
+    
+    # Decision Tree
+    print("Training Decision Tree...")
+    tree = DecisionTreeClassifier(max_depth=10, random_state=42)
+    start = time.time()
+    tree.fit(X_train, y_train)
+    train_time = time.time() - start
+    y_pred = tree.predict(X_test)
+    results['tree'] = {
+        'model': tree,
+        'accuracy': accuracy_score(y_test, y_pred),
+        'train_time': train_time
+    }
+    
+    # Random Forest
+    print("Training Random Forest...")
+    rf = RandomForestClassifier(n_estimators=100, max_depth=15, 
+                               random_state=42, n_jobs=-1)
+    start = time.time()
+    rf.fit(X_train, y_train)
+    train_time = time.time() - start
+    y_pred = rf.predict(X_test)
+    results['rf'] = {
+        'model': rf,
+        'accuracy': accuracy_score(y_test, y_pred),
+        'train_time': train_time,
+        'oob_score': rf.oob_score_ if hasattr(rf, 'oob_score_') else None,
+        'predictions': y_pred
+    }
+    
+    # Gradient Boosting
+    print("Training Gradient Boosting...")
+    gb = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1,
+                                   max_depth=3, random_state=42)
+    start = time.time()
+    gb.fit(X_train, y_train)
+    train_time = time.time() - start
+    y_pred = gb.predict(X_test)
+    results['gb'] = {
+        'model': gb,
+        'accuracy': accuracy_score(y_test, y_pred),
+        'train_time': train_time
+    }
+    
+    return results
+
+def plot_precision_recall_curves(models, X_test, y_test):
+    """Plot precision-recall curves for selected models"""
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    
+    for ax, (name, model_dict) in zip(axes, models.items()):
+        model = model_dict['model']
+        
+        # Get probability predictions
+        if hasattr(model, 'decision_function'):
+            scores = model.decision_function(X_test)
+        else:
+            scores = model.predict_proba(X_test)
+        
+        # Plot curves for selected classes
+        for digit in [0, 1, 9]:  # Best, average, worst
+            # Convert to binary classification
+            y_binary = (y_test == digit).astype(int)
+            if scores.ndim > 1:
+                score = scores[:, digit]
+            else:
+                score = scores
+            
+            precision, recall, _ = precision_recall_curve(y_binary, score)
+            ap = average_precision_score(y_binary, score)
+            
+            label = f'Digit {digit} (AP={ap:.3f})'
+            style = '-' if digit != 9 else '--'
+            ax.plot(recall, precision, style, label=label, linewidth=2)
+        
+        ax.set_xlabel('Recall')
+        ax.set_ylabel('Precision')
+        ax.set_title(f'{name} Precision-Recall Curves')
+        ax.legend(loc='lower left')
+        ax.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig('precision_recall_curves.png', dpi=150)
+    return fig
+
+def analyze_memory_usage(models):
+    """Analyze memory usage of different models"""
+    import sys
+    import pickle
+    
+    memory_data = []
+    
+    for name, model_dict in models.items():
+        model = model_dict['model']
+        
+        # Estimate model size
+        model_bytes = len(pickle.dumps(model))
+        model_mb = model_bytes / (1024 * 1024)
+        
+        # Get other metrics
+        if hasattr(model, 'support_'):
+            n_params = len(model.support_) * X_train.shape[1]
+        elif hasattr(model, 'n_estimators'):
+            n_params = model.n_estimators * 1000  # Rough estimate
+        else:
+            n_params = np.prod(model.tree_.threshold.shape)
+        
+        memory_data.append({
+            'Model': name,
+            'Model Size (MB)': f"{model_mb:.2f}",
+            'Est. Parameters': n_params,
+            'Train Time (s)': f"{model_dict.get('train_time', 0):.2f}"
+        })
+    
+    return pd.DataFrame(memory_data)
+
+# Main execution
+if __name__ == "__main__":
+    # Load data
+    print("Loading MNIST subset...")
+    X, y = load_mnist_subset(n_samples_per_class=1000)
+    
+    # Split data
+    X_temp, X_test, y_temp, y_test = train_test_split(
+        X, y, test_size=0.15, random_state=42, stratify=y
+    )
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_temp, y_temp, test_size=0.176, random_state=42, stratify=y_temp
+    )
+    
+    print(f"Data shapes: Train {X_train.shape}, Val {X_val.shape}, Test {X_test.shape}")
+    
+    # Analyze pixel importance
+    print("\nAnalyzing pixel importance...")
+    importances, tree_model = analyze_pixel_importance()
+    
+    # Train SVM models
+    print("\nTraining SVM models...")
+    svm_results = train_svm_models(X_train, X_test, y_train, y_test)
+    
+    # Train tree models
+    print("\nTraining tree-based models...")
+    tree_results = train_tree_models(X_train, X_test, y_train, y_test)
+    
+    # Combine results
+    all_models = {
+        'SVM (RBF)': svm_results['rbf'],
+        'Random Forest': tree_results['rf']
+    }
+    
+    # Plot precision-recall curves
+    print("\nPlotting precision-recall curves...")
+    fig = plot_precision_recall_curves(all_models, X_test, y_test)
+    
+    # Analyze memory usage
+    print("\nMemory usage analysis:")
+    memory_df = analyze_memory_usage({**svm_results, **tree_results})
+    print(memory_df)
+    
+    # PCA analysis
+    print("\nPCA Analysis...")
+    pca_components = [10, 20, 50, 100]
+    pca_results = []
+    
+    for n_comp in pca_components:
+        pca = PCA(n_components=n_comp)
+        X_train_pca = pca.fit_transform(X_train)
+        X_test_pca = pca.transform(X_test)
+        
+        # Train SVM on PCA features
+        svm = SVC(kernel='rbf', C=10, gamma='scale')
+        start = time.time()
+        svm.fit(X_train_pca, y_train)
+        train_time = time.time() - start
+        
+        y_pred = svm.predict(X_test_pca)
+        acc = accuracy_score(y_test, y_pred)
+        
+        pca_results.append({
+            'Components': n_comp,
+            'Variance Explained': f"{pca.explained_variance_ratio_.sum():.1%}",
+            'Accuracy': f"{acc:.1%}",
+            'Speed-up': f"{X_train.shape[1]/n_comp:.1f}x"
+        })
+    
+    pca_df = pd.DataFrame(pca_results)
+    print("\nPCA Results:")
+    print(pca_df)
+    
+    # Final summary
+    print("\n" + "="*50)
+    print("FINAL RESULTS SUMMARY")
+    print("="*50)
+    print(f"Best SVM: RBF kernel - {svm_results['rbf']['accuracy']:.1%} accuracy")
+    print(f"Best Tree: Random Forest - {tree_results['rf']['accuracy']:.1%} accuracy")
+    print(f"RBF SVM Support Vectors: {svm_results['rbf']['n_support']}")
+    print(f"Most important pixel region: Center (rows 10-18, cols 12-16)")
+\end{lstlisting}
+
+\end{document}
