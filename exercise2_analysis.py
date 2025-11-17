@@ -170,16 +170,21 @@ print(f"  Test set: {X_test.shape[0]} samples (15%)")
 print("\n3. Baseline Models")
 print("-" * 40)
 
-# a) Linear Regression baseline
+# a) Linear Regression baseline (using same scaled data as SVR)
 lr = LinearRegression()
 lr.fit(X_train, y_train)
 lr_pred_val = lr.predict(X_val)
+lr_pred_test = lr.predict(X_test)
 lr_rmse_val = np.sqrt(mean_squared_error(y_val, lr_pred_val))
 lr_r2_val = r2_score(y_val, lr_pred_val)
+lr_rmse_test = np.sqrt(mean_squared_error(y_test, lr_pred_test))
+lr_r2_test = r2_score(y_test, lr_pred_test)
 
 print("a) Linear Regression Baseline:")
 print(f"  Validation RMSE: {lr_rmse_val:.6f}")
 print(f"  Validation R²: {lr_r2_val:.6f}")
+print(f"  Test RMSE: {lr_rmse_test:.6f}")
+print(f"  Test R²: {lr_r2_test:.6f}")
 
 # b) Single Decision Tree (no pruning)
 dt_unpruned = DecisionTreeRegressor(random_state=42)
