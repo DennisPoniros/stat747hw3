@@ -18,7 +18,13 @@ from sklearn.metrics import (accuracy_score, confusion_matrix, classification_re
 from sklearn.multiclass import OneVsRestClassifier
 import time
 import warnings
+import os
 warnings.filterwarnings('ignore')
+
+# Set up cross-platform path handling
+script_dir = os.path.dirname(os.path.abspath(__file__)) if __file__ else os.getcwd()
+output_dir = os.path.join(script_dir, 'output')
+os.makedirs(output_dir, exist_ok=True)
 
 # Set style for better plots
 plt.style.use('seaborn-v0_8-darkgrid')
@@ -76,7 +82,7 @@ for digit in range(10):
 
 plt.suptitle('Sample Images from Each Digit Class')
 plt.tight_layout()
-plt.savefig('/home/claude/mnist_samples.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'mnist_samples.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # (c) Analyze class distribution and pixel statistics
@@ -120,7 +126,7 @@ ax.set_xlabel('First Principal Component')
 ax.set_ylabel('Second Principal Component')
 ax.set_title('MNIST Data Projected onto First Two Principal Components')
 plt.colorbar(scatter, ax=ax, label='Digit')
-plt.savefig('/home/claude/mnist_pca_2d.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'mnist_pca_2d.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # (b) Create derived features
@@ -313,7 +319,7 @@ sns.heatmap(cm_svm, annot=True, fmt='d', cmap='Blues')
 plt.title('SVM Confusion Matrix')
 plt.xlabel('Predicted')
 plt.ylabel('Actual')
-plt.savefig('/home/claude/svm_confusion_matrix.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'svm_confusion_matrix.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # Per-class performance
@@ -342,7 +348,7 @@ if len(misclassified_idx) > 0:
     
     plt.suptitle('SVM Misclassified Examples')
     plt.tight_layout()
-    plt.savefig('/home/claude/svm_misclassified.png', dpi=100, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'svm_misclassified.png'), dpi=100, bbox_inches='tight')
     plt.show()
 
 # ==============================================================================
@@ -437,7 +443,7 @@ fig, ax = plt.subplots(figsize=(15, 8))
 plot_tree(dt_binary, feature_names=[f'PC{i+1}' for i in range(X_train_sub_pca.shape[1])],
           class_names=['Not 3', 'Digit 3'], filled=True, ax=ax, fontsize=8)
 plt.title('Decision Tree for Binary Classification (Digit 3 vs Others)')
-plt.savefig('/home/claude/tree_structure.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'tree_structure.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # (c) Analyze feature importance
@@ -537,7 +543,7 @@ axes[1].set_ylabel('Importance')
 axes[1].set_title('Gradient Boosting Feature Importance (Top 10)')
 
 plt.tight_layout()
-plt.savefig('/home/claude/ensemble_importance.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'ensemble_importance.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # ==============================================================================
@@ -571,7 +577,7 @@ display = PartialDependenceDisplay.from_estimator(
 axes[1].set_title('Gradient Boosting: Partial Dependence for Digit 3')
 
 plt.tight_layout()
-plt.savefig('/home/claude/partial_dependence.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'partial_dependence.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # (b) What the tree "sees"
@@ -843,8 +849,16 @@ results_summary = {
 }
 
 import json
-with open('/home/claude/mnist_results.json', 'w') as f:
+with open(os.path.join(output_dir, 'mnist_results.json'), 'w') as f:
     json.dump(results_summary, f, indent=2)
 
-print("\nResults saved to mnist_results.json")
-print("All visualizations saved to /home/claude/")
+print(f"\nAll visualizations saved to: {output_dir}")
+print(f"Generated files:")
+print(f"  - mnist_samples.png")
+print(f"  - mnist_pca_2d.png")
+print(f"  - svm_confusion_matrix.png")
+print(f"  - svm_misclassified.png")
+print(f"  - tree_structure.png")
+print(f"  - ensemble_importance.png")
+print(f"  - partial_dependence.png")
+print(f"  - mnist_results.json")
