@@ -192,27 +192,26 @@ def plot_model_comparison():
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
     
     # Exercise 2: Regression Performance
-    models_reg = ['GB', 'SVR\n(Linear)', 'SVR\n(RBF)', 'RF', 'DT', 'SVR\n(Poly)', 'Linear\nReg']
-    rmse_reg = [0.0102, 0.0087, 0.0105, 0.0119, 0.0127, 0.0123, 0.1173]
-    colors_reg = ['darkgreen' if r < 0.011 else 'steelblue' if r < 0.02 else 'gray' 
+    models_reg = ['SVR\n(Linear)', 'GB', 'SVR\n(RBF)', 'SVR\n(Poly)', 'RF', 'DT', 'Linear\nReg']
+    rmse_reg = [0.0087, 0.0102, 0.0105, 0.0123, 0.0138, 0.0164, 0.0154]
+    colors_reg = ['darkgreen' if r < 0.010 else 'steelblue' if r < 0.02 else 'gray'
                   for r in rmse_reg]
     
     bars1 = ax1.bar(models_reg, rmse_reg, color=colors_reg)
     ax1.set_ylabel('Test RMSE', fontsize=12)
     ax1.set_title('Exercise 2: Regression Performance', fontsize=14, fontweight='bold')
-    ax1.set_ylim([0, 0.14])
+    ax1.set_ylim([0, 0.020])
     ax1.grid(True, axis='y', alpha=0.3)
-    
+
     # Add values on bars
     for bar, val in zip(bars1, rmse_reg):
-        if val < 0.02:
-            ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.001,
-                    f'{val:.4f}', ha='center', va='bottom', fontsize=10)
+        ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.0005,
+                f'{val:.4f}', ha='center', va='bottom', fontsize=9)
     
     # Exercise 3: Classification Accuracy
     models_clf = ['SVM\n(RBF)', 'RF', 'GB', 'DT', 'SVM\n(Linear)', 'SVM\n(Poly)']
-    accuracy_clf = [97.6, 94.1, 92.2, 81.9, 91.2, 95.8]
-    colors_clf = ['darkgreen' if a > 95 else 'steelblue' if a > 90 else 'gray' 
+    accuracy_clf = [97.2, 94.1, 92.2, 81.9, 91.2, 95.8]
+    colors_clf = ['darkgreen' if a > 95 else 'steelblue' if a > 90 else 'gray'
                   for a in accuracy_clf]
     
     bars2 = ax2.bar(models_clf, accuracy_clf, color=colors_clf)
@@ -299,7 +298,7 @@ def plot_confusion_matrix():
     
     ax.set_xlabel('Predicted Label', fontsize=12)
     ax.set_ylabel('True Label', fontsize=12)
-    ax.set_title('Confusion Matrix: SVM (RBF) on MNIST\nTest Accuracy: 97.6%', 
+    ax.set_title('Confusion Matrix: SVM (RBF) on MNIST\nTest Accuracy: 97.2%',
                 fontsize=14, fontweight='bold')
     
     plt.tight_layout()
