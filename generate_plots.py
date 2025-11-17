@@ -26,16 +26,16 @@ def plot_svr_hyperparameters():
     val_rmse = np.array([0.0162, 0.0168, 0.0175, 0.0182, 0.0189])
     
     ax1.plot(np.log10(C_values), val_rmse, 'b-o', linewidth=2, markersize=8)
-    ax1.set_xlabel('log₁₀(C)', fontsize=12)
+    ax1.set_xlabel(r'$\log_{10}(C)$', fontsize=12)
     ax1.set_ylabel('Validation RMSE', fontsize=12)
-    ax1.set_title('Linear SVR: Validation Performance vs C', fontsize=14, fontweight='bold')
+    ax1.set_title(r'Linear SVR: Validation Performance vs $C$', fontsize=14, fontweight='bold')
     ax1.grid(True, alpha=0.3)
     ax1.set_ylim([0.015, 0.020])
-    
+
     # Add optimal point
     min_idx = np.argmin(val_rmse)
-    ax1.plot(np.log10(C_values[min_idx]), val_rmse[min_idx], 'r*', markersize=15, 
-             label=f'Optimal: C={C_values[min_idx]}, RMSE={val_rmse[min_idx]:.4f}')
+    ax1.plot(np.log10(C_values[min_idx]), val_rmse[min_idx], 'r*', markersize=15,
+             label=f'Optimal: $C$={C_values[min_idx]:.4f}, RMSE={val_rmse[min_idx]:.4f}')
     ax1.legend()
     
     # RBF SVR - gamma parameter
@@ -43,16 +43,16 @@ def plot_svr_hyperparameters():
     val_rmse_rbf = np.array([0.0195, 0.0175, 0.0180, 0.0188, 0.0198])
     
     ax2.plot(np.log10(gamma_values), val_rmse_rbf, 'r-s', linewidth=2, markersize=8)
-    ax2.set_xlabel('log₁₀(γ)', fontsize=12)
+    ax2.set_xlabel(r'$\log_{10}(\gamma)$', fontsize=12)
     ax2.set_ylabel('Validation RMSE', fontsize=12)
-    ax2.set_title('RBF SVR: Validation Performance vs γ', fontsize=14, fontweight='bold')
+    ax2.set_title(r'RBF SVR: Validation Performance vs $\gamma$', fontsize=14, fontweight='bold')
     ax2.grid(True, alpha=0.3)
     ax2.set_ylim([0.017, 0.021])
-    
+
     # Add optimal point
     min_idx = np.argmin(val_rmse_rbf)
     ax2.plot(np.log10(gamma_values[min_idx]), val_rmse_rbf[min_idx], 'g*', markersize=15,
-             label=f'Optimal: γ={gamma_values[min_idx]}, RMSE={val_rmse_rbf[min_idx]:.4f}')
+             label=f'Optimal: $\\gamma$={gamma_values[min_idx]:.4f}, RMSE={val_rmse_rbf[min_idx]:.4f}')
     ax2.legend()
     
     plt.tight_layout()
