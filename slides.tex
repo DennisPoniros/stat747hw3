@@ -1,0 +1,436 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\title{From Theory to Practice: My Journey with Learning Machines}
+\subtitle{STAT 747 - Homework 3 Reflection}
+\author{Student Reflection}
+\date{\today}
+
+\begin{document}
+
+% Title slide
+\begin{frame}
+\titlepage
+\end{frame}
+
+% ============================================================================
+% PART 1: THE PHILOSOPHICAL FOUNDATION (2 minutes)
+% ============================================================================
+
+\section{The Philosophical Foundation}
+
+% Slide 1: Tree-based vs Kernel Methods
+\begin{frame}{Two Philosophical Approaches to Complexity}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\textbf{Tree-Based Methods}
+\begin{itemize}
+\item Recursive partitioning
+\item "Divide and conquer"
+\item Sequential yes/no questions
+\item Inherently interpretable
+\end{itemize}
+\vspace{0.5cm}
+\centering
+\textit{"Is pixel 378 > 0.5?"}\\
+\textit{If yes → left, else → right}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\textbf{Kernel Methods (SVMs)}
+\begin{itemize}
+\item Geometric transformation
+\item "Representation learning"
+\item Lift to higher dimensions
+\item Find optimal viewpoint
+\end{itemize}
+\vspace{0.5cm}
+\centering
+\textit{RBF kernel: map to}\\
+\textit{infinite-dimensional space}
+\end{column}
+\end{columns}
+
+\vspace{0.5cm}
+\centering
+\textbf{One seeks optimal questions, the other seeks optimal viewpoints}
+\end{frame}
+
+% Slide 2: Bias-Variance Evolution
+\begin{frame}{My Evolution Understanding Bias-Variance}
+
+\textbf{Before:} Mechanical thinking
+\begin{itemize}
+\item Complex models → low bias, high variance
+\item Simple models → high bias, low variance
+\end{itemize}
+
+\vspace{0.5cm}
+\textbf{After:} System thinking
+
+\begin{center}
+\Large
+\textcolor{blue}{Bias-variance is a \textbf{model-data system property},\\
+not just a model property}
+\end{center}
+
+\vspace{0.3cm}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\textbf{Exercise 2 (Economic Data)}\\
+Linear SVR "simple" but \textbf{optimal}\\
+RMSE: 0.0087 (best)\\
+\small{Linear data → linear model wins}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\textbf{Exercise 3 (MNIST Digits)}\\
+RBF SVM "complex" but \textbf{necessary}\\
+Accuracy: 97.2\% (best)\\
+\small{Curved boundaries → kernels win}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+% Slide 3: Most Elegant Insight
+\begin{frame}{Most Elegant Mathematical Insight}
+
+\textbf{Alice's Broken Dual Formulation}
+
+\vspace{0.3cm}
+She removed: $\alpha_i \leq C$ (thought it was redundant)
+
+\vspace{0.5cm}
+\begin{center}
+\Large
+\textcolor{red}{Constraints encode problem structure}
+\end{center}
+
+\vspace{0.5cm}
+\textbf{Without $\alpha_i \leq C$:}
+\begin{itemize}
+\item Dual becomes unbounded on non-separable data
+\item Lagrange multipliers → $\infty$ as optimizer forces impossible separation
+\item No mathematical or philosophical coherence
+\end{itemize}
+
+\vspace{0.3cm}
+\textbf{With $\alpha_i \leq C$:}
+\begin{itemize}
+\item "No single training example should dominate model behavior"
+\item Mathematically necessary + philosophically sensible
+\item Perfect primal-dual correspondence
+\end{itemize}
+
+\end{frame}
+
+% ============================================================================
+% PART 2: PRACTICAL WISDOM (3 minutes)
+% ============================================================================
+
+\section{Practical Wisdom}
+
+% Slide 4: Most Surprising Finding - Regression
+\begin{frame}{Most Surprising Finding: Simplicity Wins}
+
+\textbf{Exercise 2: Economic Growth Prediction (54 countries)}
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model} & \textbf{Test RMSE} & \textbf{Training Time} \\
+\midrule
+Linear SVR & \textcolor{blue}{\textbf{0.0087}} & 0.014s \\
+Polynomial SVR & 0.0102 & 0.018s \\
+RBF SVR & 0.0105 & 0.021s \\
+\midrule
+Decision Tree & 0.0154 & 0.003s \\
+Random Forest & 0.0138 & 0.142s \\
+Gradient Boosting & 0.0123 & \textcolor{red}{0.247s} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.3cm}
+\textbf{The Surprise:} I engineered interaction terms and polynomial features, expecting ensemble methods to dominate.
+
+\vspace{0.2cm}
+\textbf{The Reality:} Feature engineering + linear model crushed "sophisticated" methods.
+
+\vspace{0.2cm}
+\centering
+\Large
+\textcolor{blue}{Thoughtful simplicity beats automated complexity}
+
+\end{frame}
+
+% Slide 5: Partial Dependence - The Paradox
+\begin{frame}{The Paradox: Random Forest Saw Non-Linearity But Lost}
+
+\begin{center}
+\includegraphics[width=0.85\textwidth]{output/partial_dependence.png}
+\end{center}
+
+\vspace{-0.2cm}
+\small
+Random Forest revealed genuine non-linear patterns, yet linear SVR still won.\\
+\textbf{Why?} Feature engineering moved non-linearity into the feature space.
+
+\end{frame}
+
+% Slide 6: Key Insights from MNIST
+\begin{frame}{MNIST Classification: Three Key Insights}
+
+\begin{enumerate}
+\item \textbf{Kernel selection = data structure matching}
+\begin{itemize}
+\item Linear SVM: 94.1\% (can't represent curved digit boundaries)
+\item RBF SVM: \textcolor{blue}{\textbf{97.2\%}} (matches digit topology)
+\item An '8' is two loops → needs non-linear boundaries
+\end{itemize}
+
+\vspace{0.3cm}
+\item \textbf{High dimensions favor margin maximization}
+\begin{itemize}
+\item 784 pixels → 50 PCA components
+\item Trees: axis-aligned splits inefficient (DT: 92.2\%, RF: 91.2\%)
+\item SVMs: global geometric optimization (RBF: 97.2\%)
+\end{itemize}
+
+\vspace{0.3cm}
+\item \textbf{Interpretability includes uncertainty}
+\begin{itemize}
+\item Decision function confidence: 0.82 (errors) vs 2.15 (correct)
+\item \textcolor{blue}{The model knew when it didn't know}
+\end{itemize}
+\end{enumerate}
+
+\end{frame}
+
+% Slide 7: Misclassified Examples
+\begin{frame}{The Model Knew When It Didn't Know}
+
+\begin{center}
+\includegraphics[width=0.75\textwidth]{output/svm_misclassified.png}
+\end{center}
+
+\vspace{-0.2cm}
+\small
+42 errors out of 1,500 (2.8\% error rate)\\
+Most are genuinely ambiguous cases where even humans would struggle.\\
+\textbf{Key:} Model signaled low confidence on these boundary cases.
+
+\end{frame}
+
+% Slide 8: Practical Advice
+\begin{frame}{Six Practical Lessons Learned}
+
+\begin{enumerate}
+\item \textbf{Start simple, complicate mindfully}
+\begin{itemize}
+\item Always fit a linear baseline first
+\item Complexity should be justified by performance
+\end{itemize}
+
+\item \textbf{Validate with diagnostics, not just metrics}
+\begin{itemize}
+\item Initial R² = -19.5 (impossible!)
+\item Residual plots caught preprocessing errors
+\end{itemize}
+
+\item \textbf{Document test set statistics}
+\begin{itemize}
+\item Record: $n$, $\bar{y}$, $\sigma$, RMSE, MAE, R²
+\item Enable algebraic verification: $R^2 = 1 - \frac{\text{RMSE}^2}{\sigma^2}$
+\end{itemize}
+
+\item \textbf{Feature engineering beats algorithm shopping}
+\begin{itemize}
+\item 1 hour of domain thinking > 3 hours of tuning
+\end{itemize}
+
+\item \textbf{Interpret your errors}
+\begin{itemize}
+\item 42 misclassified digits taught me more than 1,458 correct predictions
+\end{itemize}
+
+\item \textbf{Cross-platform reproducibility from day one}
+\begin{itemize}
+\item Use \texttt{os.path.join()} not hardcoded paths
+\end{itemize}
+\end{enumerate}
+
+\end{frame}
+
+% ============================================================================
+% PART 3: THE BIG PICTURE (2 minutes)
+% ============================================================================
+
+\section{The Big Picture}
+
+% Slide 9: When to Prefer Each Method
+\begin{frame}{When to Prefer SVMs vs Tree-Based Methods}
+
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\textbf{Prefer SVMs when:}
+\begin{enumerate}
+\item High-dimensional, sparse data\\
+\small{(MNIST: 784 pixels)}
+\item Smooth, geometric boundaries\\
+\small{(Digit curves)}
+\item Need confidence estimates\\
+\small{(Decision function distance)}
+\item Moderate training size\\
+\small{(Thousands to tens of thousands)}
+\end{enumerate}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\textbf{Prefer Trees when:}
+\begin{enumerate}
+\item Interpretability paramount\\
+\small{(Explain pixel > 0.5 decisions)}
+\item Heterogeneous features\\
+\small{(Mixed categorical + continuous)}
+\item Missing values common\\
+\small{(Surrogate splits)}
+\item Massive training data\\
+\small{(Millions of examples)}
+\end{enumerate}
+\end{column}
+\end{columns}
+
+\vspace{0.5cm}
+\centering
+\textbf{Match method to data structure, not personal preference}
+
+\end{frame}
+
+% Slide 10: Limitations
+\begin{frame}{Limitations I Encountered}
+
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\textbf{SVM Limitations:}
+\begin{itemize}
+\item Hyperparameter sensitivity\\
+\small{Grid search $\gamma \in [10^{-4}, 10^{-1}]$}
+\item Kernel selection = art\\
+\small{RBF vs polynomial: trial/error}
+\item Computational cost at scale\\
+\small{Full MNIST prohibitive}
+\item No built-in feature importance
+\end{itemize}
+\end{column}
+
+\begin{column}{0.48\textwidth}
+\textbf{Tree Limitations:}
+\begin{itemize}
+\item High-dim inefficiency\\
+\small{Even with PCA reduction}
+\item Extrapolation failure\\
+\small{Constant predictions per leaf}
+\item Instability\\
+\small{Single tree: 92.2\%}\\
+\small{Needed ensembles}
+\end{itemize}
+\end{column}
+\end{columns}
+
+\vspace{0.5cm}
+\textbf{Both share:}
+\begin{itemize}
+\item Difficulty with online learning (must retrain from scratch)
+\item Lack of theoretical guarantees on finite samples
+\end{itemize}
+
+\end{frame}
+
+% Slide 11: Transformation
+\begin{frame}{My Transformation: Algorithm-Centric → Data-Centric}
+
+\begin{center}
+\begin{tabular}{p{0.4\textwidth} p{0.4\textwidth}}
+\toprule
+\textbf{Before This Assignment} & \textbf{After This Assignment} \\
+\midrule
+"Complex data needs complex models" & "What is my data's structure?" \\
+\midrule
+Reach for ensembles by default & Fit simple baselines first \\
+\midrule
+Trust metrics alone & Validate with diagnostics \\
+\midrule
+Algorithm shopping & Feature engineering \\
+\midrule
+Count errors & Interpret errors \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+\textbf{New Workflow:}
+\begin{enumerate}
+\item Understand data generating process
+\item Fit simple baselines (linear + engineered features)
+\item Diagnose failures (bias vs variance)
+\item Match method to structure (high-dim + smooth → kernels)
+\item Validate rigorously (diagnostics + algebraic verification)
+\end{enumerate}
+
+\end{frame}
+
+% Slide 12: Key Takeaway
+\begin{frame}{The Assignment's Greatest Gift}
+
+\begin{center}
+\Huge
+\textcolor{blue}{Confidence to choose\\
+simplicity when appropriate}
+\end{center}
+
+\vspace{1cm}
+
+\Large
+Model selection isn't about using the fanciest method.
+
+\vspace{0.3cm}
+
+It's about finding the \textbf{minimal complexity}\\
+that captures the \textbf{true data structure}.
+
+\vspace{0.5cm}
+
+\normalsize
+\begin{itemize}
+\item Exercise 2: Linear data → Linear SVR optimal
+\item Exercise 3: Curved boundaries → RBF SVM optimal
+\end{itemize}
+
+\end{frame}
+
+% Closing slide
+\begin{frame}
+\begin{center}
+\Huge Thank You
+
+\vspace{1cm}
+
+\Large Questions?
+
+\vspace{1cm}
+
+\normalsize
+\textit{From Theory to Practice:\\
+My Journey with Learning Machines}
+\end{center}
+\end{frame}
+
+\end{document}

@@ -1,366 +1,235 @@
-# From Theory to Practice: My Journey with Learning Machines
-## 7-Minute Video Defense for Exercise 4
+# Video Script: "From Theory to Practice: My Journey with Learning Machines"
+## Natural Presentation Script for Beamer Slides
 
-**Format:** Screen recording walking through compiled PDF (main.tex)
-**Duration:** 7 minutes organized by PDF sections
-
----
-
-## OPENING (15 seconds, 0:00-0:15)
-
-**[DISPLAY: Title page of PDF]**
-
-"Welcome to 'From Theory to Practice: My Journey with Learning Machines.' I'm going to walk you through my STAT 747 homework, sharing the philosophical insights, practical wisdom, and big-picture lessons I gained from implementing SVMs and tree-based methods. Let me start with the theoretical foundation in Exercise 1."
+**Total Duration:** ~7 minutes
+**Format:** Beamer slide presentation with voiceover
 
 ---
 
-## EXERCISE 1: THEORY - ALICE'S BROKEN DUAL (1 minute 45 seconds, 0:15-2:00)
+## SLIDE 1: TITLE SLIDE (15 seconds, 0:00-0:15)
 
-**[SCROLL TO: Exercise 1, page showing dual formulation analysis]**
-
-### Part 1.1 - The Philosophical Foundation Begins (45 seconds)
-
-"Exercise 1 asked us to analyze why Alice's dual formulation failed when she removed the constraint alpha-i less-than-or-equal-to C.
-
-This exercise revealed the most elegant mathematical insight of this entire assignment: **constraints encode problem structure**.
-
-In the primal formulation, C controls the soft margin through the penalty term C times sum of slack variables xi. Alice thought the dual constraint alpha ≤ C was redundant—just a consequence of the KKT conditions she'd derive anyway.
-
-But she was wrong. Without this box constraint, the dual becomes unbounded on non-separable data. The Lagrange multipliers grow infinitely as the optimizer tries to force separation where none exists. The constraint alpha-i ≤ C isn't redundant—it's the dual representation of the same penalty parameter C.
-
-**[POINT TO: Your conclusion section on the page]**
-
-This taught me something profound: the constraint says 'no single training example should dominate model behavior.' This is both mathematically necessary for convexity and philosophically sensible for generalization. A support vector machine with unbounded alphas would memorize individual points rather than learn patterns.
-
-This connects to the broader distinction between kernel methods and tree-based methods I'll discuss later: kernel methods work through optimization with carefully designed constraints, while trees work through recursive partitioning with stopping criteria."
-
-### Part 1.2 - Theoretical Insights (30 seconds)
-
-**[SCROLL TO: KKT conditions section]**
-
-"The KKT conditions shown here complete the picture. For correctly classified points outside the margin, alpha equals zero—they don't affect the model. For margin points and misclassifications, alpha equals C—they're maximally influential.
-
-The elegance: this single constraint creates a three-way partition of training data into non-support vectors, margin support vectors, and bounded support vectors. The geometry of margin maximization and the algebra of Lagrangian duality perfectly align.
-
-This is why SVMs are beautiful—the math isn't arbitrary. Every constraint has geometric meaning."
-
-### Part 1.3 - Philosophical Foundation: Bias-Variance Preview (30 seconds)
-
-"Before moving to the practical exercises, I want to note: this theoretical foundation shaped my understanding of the bias-variance tradeoff.
-
-Initially, I thought of bias-variance mechanically—complex models have low bias, high variance; simple models reverse this. But the alpha ≤ C constraint shows something deeper: **constraints control complexity**.
-
-Removing the bound doesn't make the model simpler—it makes it unbounded, infinite complexity. The constraint *creates* the model class. This foreshadows a key insight from Exercise 2: bias and variance aren't just model properties, they're properties of the model-data system. A 'complex' kernel can have high bias if it mismatches the data structure.
-
-Let me show you what I mean in Exercise 2's regression task."
+"Hi everyone. Today I'm sharing my journey through STAT 747's homework on Support Vector Machines and tree-based methods. This assignment took me from theoretical foundations through practical applications, and completely changed how I think about model selection. Let me walk you through the philosophical insights, practical wisdom, and big-picture lessons I gained along the way."
 
 ---
 
-## EXERCISE 2: REGRESSION - ECONOMIC GROWTH PREDICTION (2 minutes 15 seconds, 2:00-4:15)
+## PART 1: THE PHILOSOPHICAL FOUNDATION (2 minutes)
 
-**[SCROLL TO: Exercise 2 title and dataset description]**
+### SLIDE 2: TWO PHILOSOPHICAL APPROACHES (45 seconds, 0:15-1:00)
 
-### Part 2.1 - Most Surprising Practical Finding (1 minute)
+"Let me start with what struck me most philosophically: these two families of methods approach complexity in fundamentally different ways.
 
-"Exercise 2 predicted economic growth for 54 countries using three features: YrsOpen measuring trade liberalization, EquipInv for equipment investment, and Confucian cultural indicator. I engineered interaction terms and polynomial features.
+Tree-based methods embody what I call 'divide and conquer.' They ask sequential yes-no questions to recursively partition the input space. It's literally: 'Is pixel 378 greater than 0.5? If yes, go left; if no, go right.' This mirrors how humans make decisions—it's inherently interpretable.
 
-**[SCROLL TO: Performance comparison table showing RMSE values]**
+Kernel methods like SVMs take a completely different approach: geometric transformation. They don't partition the space—they lift data into higher-dimensional spaces where separation becomes possible. The RBF kernel I used maps data to infinite-dimensional space without ever computing the transformation explicitly.
 
-Here's my most surprising finding: Linear SVR achieved test RMSE of 0.0087, crushing Random Forest at 0.0138 and Gradient Boosting at 0.0123.
+Think of it this way: tree methods seek the optimal questions to ask about your data. Kernel methods seek the optimal viewpoint to see your data. One is interrogation, the other is perspective."
 
-Why surprising? Because I engineered non-linear features expecting ensemble methods to dominate. Random Forest should excel at finding interactions, right?
+### SLIDE 3: BIAS-VARIANCE EVOLUTION (40 seconds, 1:00-1:40)
 
-**[SCROLL TO: Partial dependence plots figure]**
+"This assignment completely transformed how I understand the bias-variance tradeoff.
 
-Look at these partial dependence plots I generated. Random Forest clearly sees non-linear patterns: YrsOpen shows accelerating returns with an inflection point, EquipInv exhibits diminishing returns—this concave curve—and Confucian has a threshold effect near 0.5.
+I used to think about it mechanically: complex models have low bias but high variance, simple models reverse this. Just memorize the formula, right?
 
-These methods **saw the non-linearity** yet still underperformed linear SVR.
+But look at what actually happened in my experiments. In Exercise 2 with economic data, linear SVR—ostensibly the simplest model—achieved the best test error. Why? Because the data was fundamentally linear. The RBF kernel's flexibility didn't reduce bias; it just added variance.
 
-The resolution: **feature engineering moved non-linearity into the feature space**. By explicitly creating EquipInv-squared and interaction terms like EquipInv times YrsOpen, I gave the linear model access to these patterns. The engineered features encoded economic domain knowledge—trade liberalization has network effects, capital investment saturates.
+Then in Exercise 3 with MNIST digits, that same linear approach failed. Accuracy jumped from 94% to 97% with the RBF kernel because handwritten digits have curved boundaries that linear models simply cannot represent.
 
-This taught me: thoughtful simplicity beats automated complexity. I spent an hour thinking about economic theory and engineering features. That one hour of domain thinking delivered more value than three hours of algorithmic tuning.
+The insight: bias and variance aren't properties of models in isolation. They're properties of the model-data system. A 'complex' kernel can have high bias if it mismatches your data structure. This was my biggest conceptual breakthrough."
 
-Plus, linear SVR trained 18 times faster: 0.014 seconds versus 0.247 for Gradient Boosting."
+### SLIDE 4: MOST ELEGANT INSIGHT (35 seconds, 1:40-2:15)
 
-### Part 2.2 - Bias-Variance as System Property (30 seconds)
+"The most elegant mathematical insight came from analyzing Alice's broken dual formulation in Exercise 1.
 
-**[SCROLL TO: Residual diagnostic plots]**
+She removed the constraint alpha-i less-than-or-equal-to C, thinking it was redundant. But without this box constraint, the dual becomes unbounded on non-separable data. The Lagrange multipliers grow infinitely as the optimizer tries to force separation where none exists.
 
-"Here's where my understanding of bias-variance transformed.
+Here's the elegance: this constraint isn't just technical bookkeeping. It encodes a beautiful principle: 'no single training example should dominate model behavior.' This is both mathematically necessary for convexity and philosophically sensible for generalization.
 
-These residual plots show the linear SVR has zero mean residuals, approximate normality on the Q-Q plot, and homoscedasticity. The model assumptions hold.
-
-The insight: bias-variance is a **model-data system property**, not just a model property. Linear SVR—ostensibly the simplest model—achieved lowest test error precisely because the economic data was fundamentally linear.
-
-The RBF kernel's flexibility became a liability. Its lower bias *in theory* didn't help because the true function was already in the linear hypothesis class. I added variance without reducing bias.
-
-Contrast this with Exercise 3, where the opposite occurred."
-
-### Part 2.3 - Practical Wisdom: Validation and Diagnostics (45 seconds)
-
-**[SCROLL TO: R² verification calculation section]**
-
-"This assignment taught me crucial practical lessons about validation.
-
-See this calculation? R-squared equals 1 minus RMSE-squared over variance-squared. I documented test set statistics: n equals 11, mean 0.0198, standard deviation 0.0200. This let me algebraically verify that 0.81 R-squared was correct: 1 minus 0.0087-squared over 0.0200-squared equals 0.811.
-
-Why does this matter? Because my initial implementation reported R-squared of negative 19.5—mathematically impossible on bounded data. Residual plots caught this preprocessing error. Metrics alone wouldn't have.
-
-**Practical advice one:** Validate with diagnostics, not just metrics. Q-Q plots, residual plots, and algebraic verification catch bugs that cross-validation scores hide.
-
-**Practical advice two:** Document your test set statistics. Those six numbers—n, mean, std, RMSE, MAE, R²—should algebraically cohere. If they don't, you have a bug.
-
-Now let me show you where complexity *was* necessary: MNIST classification."
+Constraints encode problem structure. That's not just an equation—it's a design philosophy that carries through all of machine learning."
 
 ---
 
-## EXERCISE 3: CLASSIFICATION - MNIST DIGITS (2 minutes 15 seconds, 4:15-6:30)
+## PART 2: PRACTICAL WISDOM (3 minutes)
 
-**[SCROLL TO: Exercise 3 title and MNIST sample images]**
+### SLIDE 5: MOST SURPRISING FINDING (45 seconds, 2:15-3:00)
 
-### Part 3.1 - When Complexity Matches Data Structure (45 seconds)
+"Now let me share my most surprising practical finding from Exercise 2.
 
-"Exercise 3 flipped Exercise 2's findings. Here, non-linear methods dominated.
+I was predicting economic growth for 54 countries using features like trade liberalization, equipment investment, and cultural indicators. I spent time engineering interaction terms and polynomial features, thinking ensemble methods would dominate.
 
-**[SCROLL TO: Performance comparison table]**
+Look at these results. Linear SVR achieved test RMSE of 0.0087, crushing Random Forest at 0.0138 and Gradient Boosting at 0.0123. And it was 18 times faster—14 milliseconds versus 247.
 
-SVM with RBF kernel achieved 97.2% test accuracy—1,458 correct out of 1,500 test images. Linear SVM managed only 94.1%. Decision trees hit 92.2%, Random Forest 91.2%, Gradient Boosting 95.8%.
+Here's what surprised me: I didn't just engineer features and get lucky. Random Forest and Gradient Boosting are supposed to automatically find interactions and non-linearities. So why did the simple linear model win?
 
-This is kernel selection as **data structure matching**. Handwritten digits have curved boundaries. A digit '8' is two loops. A '3' is curves stacked vertically. Linear hyperplanes can't represent this topology.
+The next slide shows you the paradox."
 
-The RBF kernel k(x, x-prime) equals exp of negative gamma times norm-squared implicitly maps to infinite-dimensional space where these curves become linearly separable. It's geometric transformation—the philosophical approach I mentioned in Exercise 1.
+### SLIDE 6: THE PARADOX (35 seconds, 3:00-3:35)
 
-**[SCROLL TO: Confusion matrix]**
+"These are partial dependence plots from Random Forest. Look at this—the model clearly sees non-linear patterns. Trade liberalization shows accelerating returns with this inflection point. Equipment investment exhibits diminishing returns—you can see the concave curve. The cultural indicator has a threshold effect.
 
-The confusion matrix shows the errors make sense: 4s confused with 9s, 3s with 5s, 7s with 9s. These are genuinely ambiguous cases."
+So Random Forest detected genuine non-linearity, yet linear SVR still beat it on test performance.
 
-### Part 3.2 - High Dimensions and Margin Maximization (30 seconds)
+The resolution? Feature engineering moved the non-linearity into the feature space. By explicitly creating interaction terms like EquipInv times YrsOpen and polynomial features like EquipInv squared, I gave the linear model access to these patterns.
 
-"Why did SVMs beat tree-based methods here despite trees working well in other contexts?
+This taught me: thoughtful simplicity beats automated complexity. One hour of domain thinking about economic theory delivered more value than three hours of hyperparameter tuning."
 
-**[SCROLL TO: Pixel importance table or PCA section]**
+### SLIDE 7: MNIST INSIGHTS (45 seconds, 3:35-4:20)
 
-High-dimensional data benefits from margin maximization. With 784 pixels reduced to 50 PCA components, tree-based methods struggled. Trees recursively partition with axis-aligned splits, but in high dimensions, you need exponentially many splits to approximate smooth boundaries.
+"Exercise 3 on MNIST digit classification yielded three key insights that complement what we just saw.
 
-SVMs directly optimize a global geometric property—the margin. This is philosophically different from trees' local, greedy splitting. In high-dimensional structured spaces like images, global optimization wins."
+First, kernel selection is really about data structure matching. Linear SVM got 94% accuracy because it can't represent curved boundaries. The RBF kernel hit 97% because handwritten digits are topologically curved—an '8' is two loops, a '3' is stacked curves. The kernel matched the geometry.
 
-### Part 3.3 - Interpretability and Model Confidence (1 minute)
+Second, high-dimensional data benefits from margin maximization. With 784 pixels reduced to 50 principal components, tree-based methods struggled. Trees partition with axis-aligned splits—inefficient in high dimensions. You need exponentially many splits to approximate smooth boundaries. SVMs optimize a global geometric property, the margin, which gives them an advantage.
 
-**[SCROLL TO: Misclassified examples figure]**
+Third—and this was profound—interpretability includes uncertainty. The SVM's decision function confidence averaged 0.82 for errors versus 2.15 for correct predictions. The model knew when it didn't know. That's valuable information."
 
-"This figure shows the 42 misclassified digits—those are the actual images from my test set.
+### SLIDE 8: MISCLASSIFIED EXAMPLES (30 seconds, 4:20-4:50)
 
-Examining these was humbling. Most are genuinely ambiguous: a '4' written like a '9', a '7' with European crossbar, digits with unusual styles. Even humans would struggle.
+"This figure shows the actual 42 digits my SVM misclassified out of 1,500 test examples—that's a 2.8% error rate.
 
-But here's the key insight about interpretability: **The SVM's decision function confidence averaged 0.82 for errors versus 2.15 for correct predictions.**
+When I examined these, I was humbled. Most are genuinely ambiguous cases. A '4' written like a '9'. A '7' with a European crossbar that looks like a '1'. Unusual handwriting styles where even I had to squint.
 
-The model knew when it didn't know.
+But here's the key: the model signaled low confidence on these boundary cases. A model that's confidently wrong is dangerous. A model that flags uncertainty is valuable. This is why I now always examine errors, not just count them."
 
-This revealed something profound: misclassification rate alone is incomplete. A model that's confidently wrong is dangerous. A model that flags uncertainty is valuable. The 2.8% error rate becomes acceptable when the model signals doubt on boundary cases.
+### SLIDE 9: PRACTICAL ADVICE (40 seconds, 4:50-5:30)
 
-**Practical advice three:** Interpret your errors. Don't just count mistakes—examine them. These 42 misclassified digits taught me more about digit topology and model behavior than the 1,458 correct predictions.
+"Let me share six practical lessons that would have saved me hours if I'd known them upfront.
 
-**Practical advice four:** If your model provides confidence scores (decision function values, probability estimates), use them. Threshold on confidence for critical applications.
+One: Start simple, complicate mindfully. I wasted hours tuning RBF hyperparameters on Exercise 2 before realizing linear was optimal. Always fit a linear baseline first.
 
-**[SCROLL TO: Stacked ensemble results if shown]**
+Two: Validate with diagnostics, not just metrics. My Exercise 2 initially reported R-squared of negative 19.5—mathematically impossible. Residual plots caught the preprocessing error that metrics alone hid.
 
-Our best performance came from stacked generalization: 98.1% accuracy combining all models. This demonstrates ensemble diversity: SVMs capture global structure through kernels, trees capture local pixel patterns. Combining them hedges bets."
+Three: Document your test set statistics. Recording n, mean, and standard deviation let me algebraically verify my R-squared calculation. If the numbers don't cohere, you have a bug.
 
----
+Four: Feature engineering beats algorithm shopping. Domain knowledge expressed through features often trumps algorithmic flexibility.
 
-## THE BIG PICTURE: MODEL SELECTION PHILOSOPHY (1 minute 15 seconds, 6:30-7:45)
+Five: Interpret your errors. Those 42 misclassified digits taught me more than the 1,458 correct predictions.
 
-**[SCROLL TO: Final comparison sections or conclusion]**
-
-### Part 3.1 - When to Prefer Each Method (30 seconds)
-
-"These two exercises crystallized when to prefer each approach.
-
-**Prefer SVMs when:**
-- Data is high-dimensional and sparse (MNIST with 784 pixels)
-- Decision boundaries are smooth and geometric (digit curves)
-- You need confidence estimates (distance to hyperplane)
-- Training set is moderate-sized—thousands to tens of thousands
-
-**Prefer tree-based methods when:**
-- Interpretability is paramount (which pixel > 0.5)
-- Features are heterogeneous—mixed categorical and continuous
-- Missing values are common (trees handle via surrogate splits)
-- Training data is massive (Gradient Boosting scales better)
-
-Exercise 2 with 54 countries and engineered features: linear SVR optimal. Exercise 3 with 5,000 images and curved boundaries: RBF SVM optimal."
-
-### Part 3.2 - Limitations I Encountered (30 seconds)
-
-"Both approaches have limitations I hit firsthand.
-
-**SVM limitations:**
-- Hyperparameter sensitivity: I grid-searched gamma from 10^-4 to 10^-1 before finding the optimum
-- Kernel selection is art, not science—RBF vs polynomial was trial and error
-- Computational cost at scale: full MNIST with 60,000 examples made standard solvers prohibitive
-- No built-in feature importance
-
-**Tree limitations:**
-- High-dimensional inefficiency even with PCA reduction
-- Extrapolation failure: trees predict constant values per leaf, can't extrapolate
-- Instability: single trees were terrible (92.2%), needed ensembles
-
-**Both share:** Difficulty with online learning and lack of theoretical guarantees on finite samples."
-
-### Part 3.3 - Transformation in Model Selection (15 seconds)
-
-"This assignment fundamentally changed my approach from **algorithm-centric to data-centric**.
-
-Before: 'Complex data needs complex models.' I'd reach for ensemble methods by default.
-
-After: 'What is my data's structure?'
-
-Exercise 2 taught me effective dimensionality matters more than ambient dimensionality. Economic growth lived on a low-dimensional linear manifold.
-
-Exercise 3 taught me inductive bias should match data geometry. Digits have curves; kernels providing curved flexibility excel.
-
-My new workflow:
-1. Understand the data generating process
-2. Fit simple baselines first—linear with engineered features
-3. Diagnose failures before adding complexity
-4. Match method to structure: high-dim + smooth → kernels; heterogeneous + interpretable → trees
-5. Validate rigorously with diagnostic plots and algebraic verification
-
-The assignment's biggest gift: **confidence to choose simplicity when appropriate**."
+Six: Use cross-platform paths from day one. My hardcoded Linux paths failed on Windows, wasting debugging time."
 
 ---
 
-## CLOSING (15 seconds, 7:45-8:00)
+## PART 3: THE BIG PICTURE (2 minutes)
 
-**[SCROLL TO: Final page or stay on conclusion]**
+### SLIDE 10: WHEN TO PREFER EACH METHOD (40 seconds, 5:30-6:10)
 
-"Model selection isn't about using the fanciest method—it's about finding the minimal complexity that captures the true data structure.
+"These two exercises crystallized when to prefer each approach in practice.
 
-This journey from Alice's broken constraint through economic regression and digit classification transformed my approach to machine learning from algorithmic enthusiasm to principled, data-driven model selection.
+Prefer SVMs when your data is high-dimensional and sparse, like MNIST with 784 pixels. When decision boundaries are smooth and geometric, like digit curves. When you need confidence estimates from the decision function distance. And when your training set is moderate-sized—thousands to tens of thousands of examples.
 
-Thank you for watching."
+Prefer tree-based methods when interpretability is paramount—you can explain exactly which pixel crossing 0.5 triggered a decision. When you have heterogeneous features mixing categorical and continuous data. When missing values are common, since trees handle these via surrogate splits. And when your training data is massive, since Gradient Boosting scales better than standard SVM solvers.
 
-**[FADE OUT]**
+The key: match your method to your data structure, not to what's currently trendy in the field."
+
+### SLIDE 11: LIMITATIONS (35 seconds, 6:10-6:45)
+
+"Both approaches have real limitations that I hit firsthand.
+
+For SVMs: hyperparameter sensitivity was brutal. I grid-searched gamma from 10-to-the-minus-4 to 10-to-the-minus-1 before finding the optimum. Kernel selection felt more like art than science—RBF versus polynomial came down to trial and error. And computational cost at scale became prohibitive. With full MNIST at 60,000 examples, I had to use PCA and subsampling just to make it tractable.
+
+For trees: high-dimensional inefficiency persisted even after PCA reduction. Extrapolation failure means trees predict constant values per leaf—they can't extrapolate beyond training ranges. And single trees were unstable—terrible performance that required ensembling to fix.
+
+Both methods share difficulty with online learning—you have to retrain from scratch when new data arrives. And neither offers theoretical guarantees on finite samples."
+
+### SLIDE 12: TRANSFORMATION (35 seconds, 6:45-7:20)
+
+"Here's how this assignment transformed my approach to model selection.
+
+Before, my mental model was algorithm-centric: 'complex data needs complex models.' I'd reach for ensemble methods by default, trust metrics alone, do algorithm shopping, and just count errors.
+
+After this assignment, I think data-centric: 'what is my data's structure?' I fit simple baselines first, validate with diagnostics, focus on feature engineering, and interpret errors for insights.
+
+My new workflow has five steps: understand the data generating process, fit simple baselines with engineered features, diagnose failures to identify bias versus variance, match method to structure—high-dimensional and smooth suggests kernels, heterogeneous and interpretable suggests trees—and validate rigorously with both diagnostic plots and algebraic verification.
+
+Exercise 2 taught me that effective dimensionality matters more than ambient dimensionality. Exercise 3 taught me that inductive bias should match data geometry."
+
+### SLIDE 13: KEY TAKEAWAY (25 seconds, 7:20-7:45)
+
+"The assignment's greatest gift was confidence to choose simplicity when appropriate.
+
+Model selection isn't about using the fanciest method. It's about finding the minimal complexity that captures the true data structure.
+
+When I had linear economic data, the linear model was optimal. When I had curved digit boundaries, the RBF kernel was necessary. The data told me what to use—I just had to listen."
+
+### SLIDE 14: CLOSING (15 seconds, 7:45-8:00)
+
+"Thank you for joining me on this journey from theory to practice with learning machines. I'm happy to answer any questions you might have."
 
 ---
 
-## RECORDING GUIDE
+## RECORDING TIPS
 
-### PDF Navigation Plan:
-
-**Minutes 0-2 (Exercise 1):**
-- Title page (15 sec)
-- Exercise 1 dual formulation section
-- Your analysis of Alice's error
-- KKT conditions
-- Your conclusion paragraph
-
-**Minutes 2-4:15 (Exercise 2):**
-- Exercise 2 title and dataset description
-- Performance comparison table
-- Partial dependence plots figure
-- Residual diagnostic plots
-- R² verification calculation
-- Final comparison table
-
-**Minutes 4:15-6:30 (Exercise 3):**
-- Exercise 3 title and MNIST sample images
-- Performance comparison table
-- Confusion matrix figure
-- Pixel importance table
-- Misclassified examples figure
-- Stacked ensemble results
-
-**Minutes 6:30-8:00 (Big Picture):**
-- Final comparison sections
-- Stay on conclusion page or scroll slowly through key results
-
-### Recording Setup:
-
-1. **Compile PDF first:**
+### Setup:
+1. **Compile slides:**
    ```bash
-   pdflatex main.tex
-   pdflatex main.tex  # Run twice for references
+   cd /home/user/stat747hw3
+   pdflatex slides.tex
+   pdflatex slides.tex  # Run twice for navigation
    ```
 
-2. **Open PDF in viewer:**
-   - Use Adobe Acrobat or Preview (Mac) or Evince (Linux)
-   - Set to single-page view (not continuous scroll)
-   - Zoom to comfortable reading size (125-150%)
+2. **Present in Overleaf or PDF viewer:**
+   - Overleaf: Use "Compile" then presentation mode
+   - PDF viewer: Full-screen mode (usually F5 or Cmd+L)
 
-3. **Screen recording settings:**
-   - Record full screen or PDF window only
-   - 1080p minimum resolution
-   - Show mouse cursor (optional, helps viewers follow)
-   - Test audio levels before full recording
+3. **Recording software:**
+   - **OBS Studio:** Screen capture + mic audio
+   - **Zoom:** Record locally in gallery view
+   - **Loom:** Web-based, easy export
 
 4. **Practice navigation:**
-   - Know which pages to pause on
-   - Practice smooth scrolling between sections
-   - Have timer visible (phone or second monitor)
+   - Know when to advance slides (marked in script)
+   - Practice smooth transitions
+   - Have timer visible
 
-### Pacing Tips:
+### Pacing:
+- **Part 1 (Philosophical):** Slower, thoughtful tone. Let equations breathe.
+- **Part 2 (Practical):** Medium pace. Point to specific numbers on slides.
+- **Part 3 (Big Picture):** Conversational, reflective. Slightly faster.
 
-- **Exercise 1 (1:45):** Slower, more philosophical. Pause on equations.
-- **Exercise 2 (2:15):** Medium pace. Point at specific numbers in tables.
-- **Exercise 3 (2:15):** Medium pace. Linger on misclassified digit images.
-- **Big Picture (1:15):** Conversational, reflective. Can speak slightly faster.
-
-### Additional Practical Advice to Weave In (if time allows):
-
-These can replace examples or be added naturally:
-
-5. **Cross-platform reproducibility:** "I initially had hardcoded Linux paths '/home/claude/' that failed on Windows. Now I use os.path.join from day one."
-
-6. **Start simple, complicate mindfully:** "I wasted hours tuning RBF on Exercise 2 before trying linear. Always fit a linear baseline first."
-
-### After Recording:
-
-1. Watch once for audio/visual quality
-2. Upload to YouTube (unlisted) or Google Drive
-3. Get shareable link
-4. Update main.tex line 868:
-   ```latex
-   \url{https://youtu.be/YOUR_VIDEO_ID}
-   ```
-5. Recompile PDF and verify link appears
-6. Test link in browser before final submission
+### Natural Delivery Tips:
+- **Don't read bullet points verbatim** - they're visual aids, not a script
+- **Use the script as a guide** - adapt phrasing to what feels natural
+- **Pause after key insights** - give viewers time to absorb
+- **Vary your tone** - excitement for surprising findings, thoughtfulness for philosophy
+- **Point at slides** (if recording webcam) - helps viewers follow along
 
 ### If Recording Goes Long:
-
-If you're at 7:30 and haven't finished, speed up or cut:
-- Exercise 1: Skip KKT details (save 15 sec)
-- Exercise 2: Shorten feature engineering explanation (save 15 sec)
-- Exercise 3: Reduce misclassified examples discussion (save 15 sec)
-- Big Picture: Combine limitations section (save 15 sec)
+Cut 30 seconds by:
+- Slide 4: Skip "design philosophy" sentence (5 sec)
+- Slide 6: Reduce PDP explanation (10 sec)
+- Slide 9: Combine advice 5-6 (10 sec)
+- Slide 11: Shorten limitations detail (5 sec)
 
 ### If Recording Goes Short:
+Add 30 seconds by:
+- Slide 2: Expand on interpretability value
+- Slide 7: Mention PCA choice (784 → 50)
+- Slide 11: Add future directions (SGD variants)
 
-If you finish at 6:30, expand:
-- Exercise 1: Discuss hard-margin vs soft-margin more
-- Exercise 2: Explain what the PDP curves mean economically
-- Exercise 3: Discuss PCA dimensionality reduction choice
-- Big Picture: Add future directions (string kernels, fairness, SGD variants)
+### After Recording:
+1. Watch once for quality
+2. Export to MP4 (H.264 codec recommended)
+3. Upload to YouTube (unlisted) or Google Drive
+4. Get shareable link
+5. Update main.tex line 868 with URL
+6. Verify link works before submission
 
 ---
 
-## CONTENT MAPPING TO REQUIREMENTS
+## CONTENT VERIFICATION
 
-This script addresses all Exercise 4 requirements:
+### Part 1: Philosophical Foundation (2 min) ✓
+- Tree vs kernel distinction: Slides 2 (partition vs transform)
+- Bias-variance evolution: Slide 3 (system property)
+- Most elegant insight: Slide 4 (constraints encode structure)
 
-### Part 1: The Philosophical Foundation (2 min)
-✓ **Tree-based vs kernel methods distinction:** Covered in Exercise 1 (1:30 mark) - partition vs transform
-✓ **Bias-variance evolution:** Covered in Exercise 2 transition (3:30 mark) - system property not model property
-✓ **Most elegant insight:** Covered in Exercise 1 (0:30 mark) - constraints encode structure (α ≤ C)
+### Part 2: Practical Wisdom (3 min) ✓
+- Most surprising finding: Slides 5-6 (linear SVR dominance)
+- Key insights: Slides 7-8 (kernel matching, margin, confidence)
+- Practical advice: Slide 9 (six lessons)
 
-### Part 2: Practical Wisdom (3 min)
-✓ **Most surprising finding (regression):** Covered in Exercise 2 (2:15 mark) - linear SVR dominance with feature engineering
-✓ **Key insights (classification):** Covered in Exercise 3 (5:00 mark) - kernel matching, confidence, interpretability
-✓ **Practical advice:** Woven throughout - diagnostics, documentation, error interpretation, simplicity first
+### Part 3: The Big Picture (2 min) ✓
+- When to prefer each: Slide 10 (data characteristics)
+- Limitations: Slide 11 (both methods)
+- Changed approach: Slide 12 (algorithm → data centric)
 
-### Part 3: The Big Picture (2 min)
-✓ **When to prefer SVMs vs trees:** Covered explicitly (6:30 mark) - data characteristics heuristics
-✓ **Current limitations:** Covered explicitly (7:00 mark) - both SVM and tree limitations from experience
-✓ **Changed approach to model selection:** Covered explicitly (7:15 mark) - algorithm-centric → data-centric
-
-**Total: ~7 minutes walking through your actual PDF**
+**Total: ~7-8 minutes with natural pacing and transitions**
