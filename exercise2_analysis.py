@@ -40,8 +40,15 @@ print("=" * 80)
 print("\n1. Data Understanding")
 print("-" * 40)
 
-# Load data
-df = pd.read_csv('/mnt/user-data/uploads/datafls.csv')
+# Load data (using relative path for cross-platform compatibility)
+import os
+script_dir = os.path.dirname(os.path.abspath(__file__)) if __file__ else os.getcwd()
+data_path = os.path.join(script_dir, 'datafls.csv')
+df = pd.read_csv(data_path)
+
+# Create output directory for plots
+output_dir = os.path.join(script_dir, 'output')
+os.makedirs(output_dir, exist_ok=True)
 print(f"Dataset shape: {df.shape}")
 print(f"Number of features: {df.shape[1] - 1}")
 print(f"Number of observations: {df.shape[0]}")
@@ -90,7 +97,7 @@ for idx, (i, feature) in enumerate(zip([2, 0, 1, 2], top_features[:4])):
     axes[row, col].plot(df[feature], p(df[feature]), "r--", alpha=0.8)
 
 plt.tight_layout()
-plt.savefig('/home/claude/exploration.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'exploration.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # c) Check for missing values and outliers
@@ -316,7 +323,7 @@ axes[1].set_title('RBF SVR: Effect of Gamma Parameter')
 axes[1].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig('/home/claude/svr_hyperparameters.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'svr_hyperparameters.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # ==============================================================================
@@ -373,7 +380,7 @@ stats.probplot(residuals, dist="norm", plot=axes[2])
 axes[2].set_title('Q-Q Plot')
 
 plt.tight_layout()
-plt.savefig('/home/claude/svr_residuals.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'svr_residuals.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 print(f"  Mean residual: {residuals.mean():.6f}")
@@ -471,7 +478,7 @@ fig, ax = plt.subplots(figsize=(20, 10))
 plot_tree(best_dt, feature_names=X.columns, filled=True, 
           rounded=True, ax=ax, fontsize=8, max_depth=3)
 plt.title('Decision Tree Structure (Top 3 Levels)')
-plt.savefig('/home/claude/tree_structure.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'tree_structure.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # c) Compute feature importance
@@ -580,7 +587,7 @@ for idx, feature in enumerate(top_features_rf):
 
 plt.suptitle('Partial Dependence Plots - Random Forest')
 plt.tight_layout()
-plt.savefig('/home/claude/partial_dependence.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'partial_dependence.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # b) Compare feature importance across methods
@@ -823,7 +830,7 @@ print("   6. Data augmentation: If possible, collect more training samples")
 # ==============================================================================
 
 # Save comprehensive results
-results_df.to_csv('/home/claude/model_comparison_results.csv', index=False)
+results_df.to_csv(os.path.join(output_dir, 'model_comparison_results.csv'), index=False)
 print("\n" + "=" * 80)
 print("ANALYSIS COMPLETE")
 print("Results saved to model_comparison_results.csv")
@@ -878,7 +885,15 @@ else:
 
 plt.suptitle('Comprehensive Model Comparison Results', fontsize=14, y=1.02)
 plt.tight_layout()
-plt.savefig('/home/claude/final_comparison.png', dpi=100, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'final_comparison.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
-print("\nAll visualizations saved to /home/claude/")
+print(f"\nAll visualizations saved to: {output_dir}")
+print(f"Generated files:")
+print(f"  - exploration.png")
+print(f"  - svr_hyperparameters.png")
+print(f"  - svr_residuals.png")
+print(f"  - tree_structure.png")
+print(f"  - partial_dependence.png")
+print(f"  - final_comparison.png")
+print(f"  - model_comparison_results.csv")
